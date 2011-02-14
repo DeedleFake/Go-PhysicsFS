@@ -107,6 +107,24 @@ func SetWriteDir(dir string) (os.Error) {
 	return os.NewError(GetLastError())
 }
 
+func SetSaneConfig(org, app, ext string, cd, arc bool) (os.Error) {
+	cdArg := 0
+	if cd {
+		cdArg = 1
+	}
+
+	arcArg := 0
+	if arc {
+		arcArg = 1
+	}
+
+	if int(C.PHYSFS_setSaneConfig(C.CString(org), C.CString(app), C.CString(ext), C.int(cdArg), C.int(arcArg))) != 0 {
+		return nil
+	}
+
+	return os.NewError(GetLastError())
+}
+
 func Mount(dir, mp string, app bool) (os.Error) {
 	a := 0
 	if app {

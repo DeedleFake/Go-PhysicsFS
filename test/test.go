@@ -7,6 +7,7 @@ import(
 )
 
 func main() {
+	physfs.SetSaneConfig("testing", "go-physfs-test", "aoi", false, false)
 	ver := physfs.GetVersion()
 	fmt.Printf("Version:\n\tMajor: %v\n\tMinor: %v\n\tPatch: %v\n\n", ver.Major, ver.Minor, ver.Patch)
 	linkver := physfs.GetLinkedVersion()
@@ -24,7 +25,7 @@ func main() {
 	fmt.Printf("\n")
 
 	buffer := make([]byte, 1024)
-	physfs.Mount("zip1.zip", "", true)
+	//physfs.Mount("zip1.aoi", "", true)
 	file1, err := physfs.Open("dir1/file1", os.O_RDONLY)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err.String())
@@ -34,7 +35,6 @@ func main() {
 	n, _ := file1.Read(buffer)
 	fmt.Printf("%v\n", string(buffer[0:n]))
 
-	physfs.SetWriteDir(".")
 	file2, err := physfs.Open("file2", os.O_WRONLY)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err.String())
