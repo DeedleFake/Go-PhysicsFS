@@ -95,6 +95,18 @@ func GetUserDir() (string) {
 	return C.GoString(C.PHYSFS_getUserDir())
 }
 
+func GetWriteDir() (string) {
+	return C.GoString(C.PHYSFS_getWriteDir())
+}
+
+func SetWriteDir(dir string) (os.Error) {
+	if int(C.PHYSFS_setWriteDir(C.CString(dir))) != 0 {
+		return nil
+	}
+
+	return os.NewError(GetLastError())
+}
+
 func Mount(dir, mp string, app bool) (os.Error) {
 	a := 0
 	if app {
@@ -112,8 +124,12 @@ func Open(name string, flag int) (f *File, err os.Error) {
 	switch flag {
 		case os.O_RDONLY:
 			f = (*File)(C.PHYSFS_openRead(C.CString(name)))
+		case os.O_WRONLY:
+			f = (*File)(C.PHYSFS_openWrite(C.CString(name)))
+		case os.O_WRONLY | os.O_APPEND:
+			f = (*File)(C.PHYSFS_openAppend(C.CString(name)))
 		default:
-			return nil, os.NewError("Unknown flag.")
+			return nil, os.NewError("Unknown flag(s).")
 	}
 
 	if f == nil {
@@ -133,6 +149,16 @@ func (f *File)Close() (os.Error) {
 
 func (f *File)Read(buf []byte) (n int, err os.Error) {
 	n = int(C.PHYSFS_read((*C.PHYSFS_File)(f), unsafe.Pointer(&buf[0]), 1, C.PHYSFS_uint32(len(buf))))
+
+	if n == -1 {
+		return n, os.NewError(GetLastError())
+	}
+
+	return n, nil
+}
+
+func (f *File)Write(buf []byte) (n int, err os.Error) {
+	n = int(C.PHYSFS_write((*C.PHYSFS_File)(f), unsafe.Pointer(&buf[0]), 1, C.PHYSFS_uint32(len(buf))))
 
 	if n == -1 {
 		return n, os.NewError(GetLastError())

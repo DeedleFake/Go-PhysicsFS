@@ -32,5 +32,14 @@ func main() {
 	}
 	defer file1.Close()
 	n, _ := file1.Read(buffer)
-	fmt.Printf("%v", string(buffer[0:n]))
+	fmt.Printf("%v\n", string(buffer[0:n]))
+
+	physfs.SetWriteDir(".")
+	file2, err := physfs.Open("file2", os.O_WRONLY)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err.String())
+		os.Exit(1)
+	}
+	defer file2.Close()
+	fmt.Fprintf(file2, "This is also a test.")
 }
