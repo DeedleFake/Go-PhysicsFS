@@ -47,6 +47,24 @@ func GetLinkedVersion() (ver *Version) {
 	return ver
 }
 
+func SupportedArchiveTypes() (ai []*ArchiveInfo) {
+	cai := C.PHYSFS_supportedArchiveTypes()
+
+	i := uintptr(0)
+	for {
+		archive := (**C.PHYSFS_ArchiveInfo)(unsafe.Pointer(uintptr(unsafe.Pointer(cai)) + i)) //(*)
+		if *archive == nil {
+			break
+		}
+
+		ai = append(ai, (*ArchiveInfo)(unsafe.Pointer(*archive)))
+
+		i += uintptr(unsafe.Sizeof(*archive))
+	}
+
+	return ai
+}
+
 func GetBaseDir() (string) {
 	return C.GoString(C.PHYSFS_getBaseDir())
 }
