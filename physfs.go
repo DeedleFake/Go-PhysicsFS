@@ -125,6 +125,29 @@ func SetSaneConfig(org, app, ext string, cd, arc bool) (os.Error) {
 	return os.NewError(GetLastError())
 }
 
+func GetSearchPath() (sp []string, err os.Error) {
+	csp := C.PHYSFS_getSearchPath()
+
+	if csp == nil {
+		return nil, os.NewError(GetLastError())
+	}
+
+	i := uintptr(0)
+	for {
+		pp := *(**C.char)(unsafe.Pointer(uintptr(unsafe.Pointer(csp)) + i))
+		if pp == nil {
+			break
+		}
+		p := C.GoString(pp)
+
+		sp = append(sp, p)
+
+		i += uintptr(unsafe.Sizeof(csp))
+	}
+
+	return sp, nil
+}
+
 func Mount(dir, mp string, app bool) (os.Error) {
 	a := 0
 	if app {

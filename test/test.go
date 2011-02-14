@@ -41,4 +41,7 @@ func main() {
 	}
 	defer file2.Close()
 	fmt.Fprintf(file2, "This is also a test.")
+
+	sp, _ := physfs.GetSearchPath()
+	fmt.Printf("%v\n", sp)
 }
