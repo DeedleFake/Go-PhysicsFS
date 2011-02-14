@@ -6,5 +6,6 @@ import(
 )
 
 func main() {
-	fmt.Printf("%v\n", physfs.GetBaseDir())
+	fmt.Printf("BaseDir: %v\n", physfs.GetBaseDir())
+	fmt.Printf("UserDir: %v\n", physfs.GetUserDir())
 }

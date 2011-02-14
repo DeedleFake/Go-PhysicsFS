@@ -16,3 +16,7 @@ func init() {
 func GetBaseDir() (string) {
 	return C.GoString(C.PHYSFS_getBaseDir())
 }
+
+func GetUserDir() (string) {
+	return C.GoString(C.PHYSFS_getUserDir())
+}
