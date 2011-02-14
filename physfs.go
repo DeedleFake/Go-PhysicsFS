@@ -69,19 +69,19 @@ func GetLinkedVersion() (ver *Version) {
 	return ver
 }
 
-func SupportedArchiveTypes() (ai []*ArchiveInfo) {
+func SupportedArchiveTypes() (ai []ArchiveInfo) {
 	cai := C.PHYSFS_supportedArchiveTypes()
 
 	i := uintptr(0)
 	for {
-		archive := (**C.PHYSFS_ArchiveInfo)(unsafe.Pointer(uintptr(unsafe.Pointer(cai)) + i)) //(*)
-		if *archive == nil {
+		archive := *(**C.PHYSFS_ArchiveInfo)(unsafe.Pointer(uintptr(unsafe.Pointer(cai)) + i))
+		if archive == nil {
 			break
 		}
 
-		ai = append(ai, (*ArchiveInfo)(unsafe.Pointer(*archive)))
+		ai = append(ai, *(*ArchiveInfo)(unsafe.Pointer(archive)))
 
-		i += uintptr(unsafe.Sizeof(*archive))
+		i += uintptr(unsafe.Sizeof(cai))
 	}
 
 	return ai
@@ -134,13 +134,12 @@ func GetSearchPath() (sp []string, err os.Error) {
 
 	i := uintptr(0)
 	for {
-		pp := *(**C.char)(unsafe.Pointer(uintptr(unsafe.Pointer(csp)) + i))
-		if pp == nil {
+		p := *(**C.char)(unsafe.Pointer(uintptr(unsafe.Pointer(csp)) + i))
+		if p == nil {
 			break
 		}
-		p := C.GoString(pp)
 
-		sp = append(sp, p)
+		sp = append(sp, C.GoString(p))
 
 		i += uintptr(unsafe.Sizeof(csp))
 	}
