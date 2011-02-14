@@ -25,17 +25,12 @@ func main() {
 
 	buffer := make([]byte, 1024)
 	physfs.Mount("zip1.zip", "", true)
-	file1 := func() (*physfs.File) {
-		defer func() {
-			r := recover()
-			if r != nil {
-				fmt.Printf("Error: %v\n", r)
-				os.Exit(1)
-			}
-		}()
-		return physfs.Open("dir1/file1", os.O_RDONLY)
-	}()
+	file1, err := physfs.Open("dir1/file1", os.O_RDONLY)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err.String())
+		os.Exit(1)
+	}
 	defer file1.Close()
-	n := file1.Read(buffer)
+	n, _ := file1.Read(buffer)
 	fmt.Printf("%v", string(buffer[0:n]))
 }

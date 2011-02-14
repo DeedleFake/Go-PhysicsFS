@@ -39,12 +39,12 @@ func IsInit() (bool) {
 	return false
 }
 
-func Deinit() {
+func Deinit() (os.Error) {
 	if int(C.PHYSFS_deinit()) != 0 {
-		return
+		return nil
 	}
 
-	panic(GetLastError())
+	return os.NewError(GetLastError())
 }
 
 func GetLastError() (string) {
@@ -95,48 +95,48 @@ func GetUserDir() (string) {
 	return C.GoString(C.PHYSFS_getUserDir())
 }
 
-func Mount(dir, mp string, app bool) {
+func Mount(dir, mp string, app bool) (os.Error) {
 	a := 0
 	if app {
 		a = 1
 	}
 
 	if int(C.PHYSFS_mount(C.CString(dir), C.CString(mp), C.int(a))) != 0 {
-		return
+		return nil
 	}
 
-	panic(GetLastError())
+	return os.NewError(GetLastError())
 }
 
-func Open(name string, flag int) (f *File) {
+func Open(name string, flag int) (f *File, err os.Error) {
 	switch flag {
 		case os.O_RDONLY:
 			f = (*File)(C.PHYSFS_openRead(C.CString(name)))
 		default:
-			panic("Unknown flag.")
+			return nil, os.NewError("Unknown flag.")
 	}
 
 	if f == nil {
-		panic(GetLastError())
+		return f, os.NewError(GetLastError())
 	}
 
-	return f
+	return f, nil
 }
 
-func (f *File)Close() {
+func (f *File)Close() (os.Error) {
 	if int(C.PHYSFS_close((*C.PHYSFS_File)(f))) != 0 {
-		return
+		return nil
 	}
 
-	panic(GetLastError())
+	return os.NewError(GetLastError())
 }
 
-func (f *File)Read(buf []byte) (n int) {
+func (f *File)Read(buf []byte) (n int, err os.Error) {
 	n = int(C.PHYSFS_read((*C.PHYSFS_File)(f), unsafe.Pointer(&buf[0]), 1, C.PHYSFS_uint32(len(buf))))
 
 	if n == -1 {
-		panic(GetLastError())
+		return n, os.NewError(GetLastError())
 	}
 
-	return n
+	return n, nil
 }
