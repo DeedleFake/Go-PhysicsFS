@@ -107,6 +107,10 @@ func SetWriteDir(dir string) (os.Error) {
 	return os.NewError(GetLastError())
 }
 
+func GetDirSeparator() (string) {
+	return C.GoString(C.PHYSFS_getDirSeparator())
+}
+
 func SetSaneConfig(org, app, ext string, cd, arc bool) (os.Error) {
 	cdArg := 0
 	if cd {
@@ -123,6 +127,29 @@ func SetSaneConfig(org, app, ext string, cd, arc bool) (os.Error) {
 	}
 
 	return os.NewError(GetLastError())
+}
+
+func GetCdRomDirs() (sp []string, err os.Error) {
+	csp := C.PHYSFS_getCdRomDirs()
+
+	if csp == nil {
+		return nil, os.NewError(GetLastError())
+	}
+
+	i := uintptr(0)
+	for {
+		p := *(**C.char)(unsafe.Pointer(uintptr(unsafe.Pointer(csp)) + i))
+		if p == nil {
+			break
+		}
+
+		sp = append(sp, C.GoString(p))
+
+		i += uintptr(unsafe.Sizeof(csp))
+	}
+
+	C.PHYSFS_freeList(unsafe.Pointer(csp))
+	return sp, nil
 }
 
 func GetSearchPath() (sp []string, err os.Error) {
@@ -144,6 +171,7 @@ func GetSearchPath() (sp []string, err os.Error) {
 		i += uintptr(unsafe.Sizeof(csp))
 	}
 
+	C.PHYSFS_freeList(unsafe.Pointer(csp))
 	return sp, nil
 }
 
