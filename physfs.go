@@ -250,3 +250,33 @@ func (f *File)Seek(offset int64, none int) (int64, os.Error) {
 
 	return r, nil
 }
+
+func (f *File)Length() (int64, os.Error) {
+	r := int64(C.PHYSFS_fileLength((*C.PHYSFS_File)(f)))
+
+	if r == -1 {
+		return r, os.NewError(GetLastError())
+	}
+
+	return r, nil
+}
+
+func (f *File)SetBuffer(size uint64) (os.Error) {
+	if int(C.PHYSFS_setBuffer((*C.PHYSFS_File)(f), C.PHYSFS_uint64(size))) != 0 {
+		return nil
+	}
+
+	return os.NewError(GetLastError())
+}
+
+func (f *File)Flush() (os.Error) {
+	if int(C.PHYSFS_flush((*C.PHYSFS_File)(f))) != 0 {
+		return nil
+	}
+
+	return os.NewError(GetLastError())
+}
+
+func (f *File)Sync() (os.Error) {
+	return f.Flush()
+}
