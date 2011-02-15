@@ -45,6 +45,11 @@ func main() {
 	sp, _ := physfs.GetSearchPath()
 	fmt.Printf("%v\n\n", sp)
 
+	//physfs.GetSearchPathCallback(func(d interface{}, i string) {
+	//	fmt.Printf("%v\n", i)
+	//}, nil)
+	//fmt.Printf("\n")
+
 	list, _ := physfs.EnumerateFiles("/")
 	fmt.Printf("%v\n\n", list)
 }

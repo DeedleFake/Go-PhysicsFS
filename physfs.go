@@ -31,6 +31,8 @@ type Version struct {
 	Patch uint8
 }
 
+type StringCallback func(interface{}, string)
+
 func IsInit() (bool) {
 	if int(C.PHYSFS_isInit()) != 0 {
 		return true
@@ -152,6 +154,10 @@ func GetCdRomDirs() (sp []string, err os.Error) {
 	return sp, nil
 }
 
+//func GetCdRomDirsCallback(c StringCallback, d interface{}) {
+//	C.PHYSFS_getCdRomDirsCallback((*[0]uint8)(unsafe.Pointer(&c)), unsafe.Pointer(&d))
+//}
+
 func GetSearchPath() (sp []string, err os.Error) {
 	csp := C.PHYSFS_getSearchPath()
 
@@ -174,6 +180,10 @@ func GetSearchPath() (sp []string, err os.Error) {
 	C.PHYSFS_freeList(unsafe.Pointer(csp))
 	return sp, nil
 }
+
+//func GetSearchPathCallback(c StringCallback, d interface{}) {
+//	C.PHYSFS_getSearchPathCallback((*[0]uint8)(unsafe.Pointer(&c)), unsafe.Pointer(&d))
+//}
 
 func PermitSymbolicLinks(set bool) {
 	s := C.int(0)
@@ -310,13 +320,13 @@ func RemoveFromSearchPath(dir string) (os.Error) {
 }
 
 func GetLastModTime(n string) (int64, os.Error) {
-	n := int64(C.PHYSFS_getLastModTime(C.CString(n)))
+	num := int64(C.PHYSFS_getLastModTime(C.CString(n)))
 
-	if n != -1 {
-		return n, nil
+	if num != -1 {
+		return num, nil
 	}
 
-	return n, os.NewError(GetLastError())
+	return num, os.NewError(GetLastError())
 }
 
 func Open(name string, flag int) (f *File, err os.Error) {
