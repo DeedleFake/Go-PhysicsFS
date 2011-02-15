@@ -147,6 +147,23 @@ func GetSearchPath() (sp []string, err os.Error) {
 	return sp, nil
 }
 
+func PermitSymbolicLinks(set bool) {
+	s := C.int(0)
+	if set {
+		s = 1
+	}
+
+	C.PHYSFS_permitSymbolicLinks(s)
+}
+
+func Mkdir(dir string) (os.Error) {
+	if int(C.PHYSFS_mkdir(C.CString(dir))) != 0 {
+		return nil
+	}
+
+	return os.NewError(GetLastError())
+}
+
 func Mount(dir, mp string, app bool) (os.Error) {
 	a := 0
 	if app {
@@ -205,4 +222,31 @@ func (f *File)Write(buf []byte) (n int, err os.Error) {
 	}
 
 	return n, nil
+}
+
+func (f *File)EOF() (bool) {
+	if int(C.PHYSFS_eof((*C.PHYSFS_File)(f))) != 0 {
+		return true
+	}
+
+	return false
+}
+
+func (f *File)Tell() (int64, os.Error) {
+	r := int64(C.PHYSFS_tell((*C.PHYSFS_File)(f)))
+	if r == -1 {
+		return r, os.NewError(GetLastError())
+	}
+
+	return r, nil
+}
+
+func (f *File)Seek(offset int64, none int) (int64, os.Error) {
+	r := int64(C.PHYSFS_seek((*C.PHYSFS_File)(f), C.PHYSFS_uint64(offset)))
+
+	if r == 0 {
+		return r, os.NewError(GetLastError())
+	}
+
+	return r, nil
 }
