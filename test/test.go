@@ -43,5 +43,8 @@ func main() {
 	fmt.Fprintf(file2, "This is also a test.")
 
 	sp, _ := physfs.GetSearchPath()
-	fmt.Printf("%v\n", sp)
+	fmt.Printf("%v\n\n", sp)
+
+	list, _ := physfs.EnumerateFiles("/")
+	fmt.Printf("%v\n\n", list)
 }

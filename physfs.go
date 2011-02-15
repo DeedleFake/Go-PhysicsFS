@@ -184,6 +184,47 @@ func PermitSymbolicLinks(set bool) {
 	C.PHYSFS_permitSymbolicLinks(s)
 }
 
+func GetRealDir(n string) (string, os.Error) {
+	dir := C.PHYSFS_getRealDir(C.CString(n))
+
+	if dir != nil {
+		return C.GoString(dir), nil
+	}
+
+	return C.GoString(dir), os.NewError(GetLastError())
+}
+
+func EnumerateFiles(dir string) (list []string, err os.Error) {
+	clist := C.PHYSFS_enumerateFiles(C.CString(dir))
+
+	if clist == nil {
+		return nil, os.NewError(GetLastError())
+	}
+
+	i := uintptr(0)
+	for {
+		item := *(**C.char)(unsafe.Pointer(uintptr(unsafe.Pointer(clist)) + i))
+		if item == nil {
+			break
+		}
+
+		list = append(list, C.GoString(item))
+
+		i += uintptr(unsafe.Sizeof(clist))
+	}
+
+	C.PHYSFS_freeList(unsafe.Pointer(clist))
+	return list, nil
+}
+
+func Delete(n string) (os.Error) {
+	if int(C.PHYSFS_delete(C.CString(n))) != 0 {
+		return nil
+	}
+
+	return os.NewError(GetLastError())
+}
+
 func Mkdir(dir string) (os.Error) {
 	if int(C.PHYSFS_mkdir(C.CString(dir))) != 0 {
 		return nil
@@ -199,6 +240,14 @@ func Mount(dir, mp string, app bool) (os.Error) {
 	}
 
 	if int(C.PHYSFS_mount(C.CString(dir), C.CString(mp), C.int(a))) != 0 {
+		return nil
+	}
+
+	return os.NewError(GetLastError())
+}
+
+func RemoveFromSearchPath(dir string) (os.Error) {
+	if int(C.PHYSFS_removeFromSearchPath(C.CString(dir))) != 0 {
 		return nil
 	}
 
