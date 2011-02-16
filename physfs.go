@@ -51,7 +51,7 @@ func GetLastError() (string) {
 	return C.GoString(C.PHYSFS_getLastError())
 }
 
-func GetVersion() (ver *Version) {
+func VERSION() (ver *Version) {
 	ver = new(Version)
 
 	ver.Major = C.PHYSFS_VER_MAJOR

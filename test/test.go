@@ -8,7 +8,7 @@ import(
 
 func main() {
 	physfs.SetSaneConfig("test-go-physfs", "", "aoi", false, false)
-	ver := physfs.GetVersion()
+	ver := physfs.VERSION()
 	fmt.Printf("Version:\n\tMajor: %v\n\tMinor: %v\n\tPatch: %v\n\n", ver.Major, ver.Minor, ver.Patch)
 	linkver := physfs.GetLinkedVersion()
 	fmt.Printf("LinkedVersion:\n\tMajor: %v\n\tMinor: %v\n\tPatch: %v\n\n", linkver.Major, linkver.Minor, linkver.Patch)
