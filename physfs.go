@@ -10,8 +10,9 @@ import "C"
 
 func init() {
 	if !IsInit() {
-		if C.PHYSFS_init(C.CString(os.Args[0])) == 0 {
-			panic(GetLastError())
+		err := Init()
+		if err != nil {
+			panic(err)
 		}
 	}
 }
@@ -44,6 +45,16 @@ func IsInit() (bool) {
 	}
 
 	return false
+}
+
+// Initialize PhysicsFS. Done automatically upon import, but can be necessary
+// if PhysicsFS was deinitialized. Returns an error, if any.
+func Init() (os.Error) {
+	if int(C.PHYSFS_init(C.CString(os.Args[0]))) != 0 {
+		return nil
+	}
+
+	return os.NewError(GetLastError())
 }
 
 // Deinitialize PhysicsFS. This closes any files that have been opened by
