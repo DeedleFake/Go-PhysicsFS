@@ -30,17 +30,17 @@ func main() {
 		fmt.Printf("Error: %v\n", err.String())
 		os.Exit(1)
 	}
-	defer file1.Close()
 	n, _ := file1.Read(buffer)
 	fmt.Printf("%v\n", string(buffer[0:n]))
+	file1.Close()
 
 	file2, err := physfs.Open("file2", os.O_WRONLY)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err.String())
 		os.Exit(1)
 	}
-	defer file2.Close()
 	fmt.Fprintf(file2, "This is also a test.")
+	file2.Close()
 
 	sp, _ := physfs.GetSearchPath()
 	fmt.Printf("%v\n\n", sp)
@@ -52,4 +52,18 @@ func main() {
 
 	list, _ := physfs.EnumerateFiles("/")
 	fmt.Printf("%v\n\n", list)
+
+	err = physfs.SetWriteDir(physfs.GetBaseDir())
+	if err != nil {
+		fmt.Printf("Error: %v\n", err.String())
+		os.Exit(1)
+	}
+
+	fmt.Printf("Recursively deleting 'test-dir'...\n")
+	err = physfs.DeleteRecurse("test-dir")
+	if err != nil {
+		fmt.Printf("Error: %v\n", err.String())
+		os.Exit(1)
+	}
+	fmt.Printf("Succeeded.\n\n")
 }

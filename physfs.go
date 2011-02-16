@@ -333,35 +333,38 @@ func Delete(n string) (os.Error) {
 	return os.NewError(GetLastError())
 }
 
-//func DeleteRecurse(dir string) (err os.Error) {
-//	if IsDirectory(dir) {
-//		files, err := EnumerateFiles(dir)
-//		if err != nil {
-//			return err
-//		}
-//		for _, i := range(files) {
-//			diri := dir + GetDirSeparator() + i
-//			if IsDirectory(diri) {
-//				err = DeleteRecurse(diri)
-//				if err != nil {
-//					return err
-//				}
-//			} else if Exists(diri) {
-//				err = Delete(diri)
-//				if err != nil {
-//					return err
-//				}
-//			}
-//		}
-//
-//		err = Delete(dir)
-//		if err != nil {
-//			return err
-//		}
-//	}
-//
-//	return err
-//}
+// A convienece function that will recurse through a directory, deleting all
+// sub-directories and files and then the original directory as well. Returns an
+// error, if any.
+func DeleteRecurse(dir string) (err os.Error) {
+	if IsDirectory(dir) {
+		files, err := EnumerateFiles(dir)
+		if err != nil {
+			return err
+		}
+		for _, i := range(files) {
+			diri := dir + GetDirSeparator() + i
+			if IsDirectory(diri) {
+				err = DeleteRecurse(diri)
+				if err != nil {
+					return err
+				}
+			} else if Exists(diri) {
+				err = Delete(diri)
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+		err = Delete(dir)
+		if err != nil {
+			return err
+		}
+	}
+
+	return err
+}
 
 // Returns true if dir exists and is a directory. Otherwise, returns false.
 func IsDirectory(dir string) (bool) {
