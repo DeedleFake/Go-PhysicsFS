@@ -7,7 +7,7 @@ Prerequisites
 -------------
 
  * [PhysicsFS][physfs].
- * A recent version of [Go][go].
+ * A recent version of [Go][go]. (As of 2011-02-16)
 
 Installation
 ------------
