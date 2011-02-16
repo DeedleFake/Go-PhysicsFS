@@ -17,6 +17,6 @@ Coming soon? Examples, perhaps?
 Authors
 -------
 
- * DeedleFake
+ * [DeedleFake](https://github.com/DeedleFake)
 
 [physfs]: http://www.icculus.org/physfs/
