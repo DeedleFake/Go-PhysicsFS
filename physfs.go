@@ -58,7 +58,8 @@ func Init() (os.Error) {
 }
 
 // Deinitialize PhysicsFS. This closes any files that have been opened by
-// PhysicsFS, clears the search and write paths, and cleans up other related
+// PhysicsFS, clears the search and write paths, forgets other settings, such as
+// whether or not symbolic links are permitted, and cleans up other related
 // resources.
 func Deinit() (os.Error) {
 	if int(C.PHYSFS_deinit()) != 0 {
@@ -149,24 +150,37 @@ func GetDirSeparator() (string) {
 	return C.GoString(C.PHYSFS_getDirSeparator())
 }
 
-func SetSaneConfig(org, app, ext string, cd, arc bool) (os.Error) {
+// Sets up sane, default search/write paths. The write path is set to
+// 'GetUserDir()/.org/app', which is created if it doesn't exist. The search
+// path is set to the write path, GetBaseDir(), any deteced CD-ROM directories,
+// if specified by cd, and any archives found in any of the previously listed
+// locations that have extensions that match ext. Do not automatically load
+// archives, simply give a blank string. Do not specifiy a '.' before the
+// extension. If pre is true the archives are prepended to the search path; if
+// false they are appended.
+func SetSaneConfig(org, app, ext string, cd, pre bool) (os.Error) {
 	cdArg := 0
 	if cd {
 		cdArg = 1
 	}
 
-	arcArg := 0
-	if arc {
-		arcArg = 1
+	preArg := 0
+	if pre {
+		preArg = 1
 	}
 
-	if int(C.PHYSFS_setSaneConfig(C.CString(org), C.CString(app), C.CString(ext), C.int(cdArg), C.int(arcArg))) != 0 {
+	if int(C.PHYSFS_setSaneConfig(C.CString(org), C.CString(app), C.CString(ext), C.int(cdArg), C.int(preArg))) != 0 {
 		return nil
 	}
 
 	return os.NewError(GetLastError())
 }
 
+// Returns a []string containing all detected CD-ROM directories and an error,
+// if any. Note that detection of CD-ROM drives is dependent on various factors,
+// such as whether or not there is a disc in the drive. Also note that while
+// this function and related ones refer to CD-ROMs, they will detect any type of
+// supported disc, including DVDs and Blu-Ray discs.
 func GetCdRomDirs() (sp []string, err os.Error) {
 	csp := C.PHYSFS_getCdRomDirs()
 
@@ -194,6 +208,8 @@ func GetCdRomDirs() (sp []string, err os.Error) {
 //	C.PHYSFS_getCdRomDirsCallback((*[0]uint8)(unsafe.Pointer(&c)), unsafe.Pointer(&d))
 //}
 
+// Returns a []string with the current search path, in order, and an error, if
+// any.
 func GetSearchPath() (sp []string, err os.Error) {
 	csp := C.PHYSFS_getSearchPath()
 
@@ -221,6 +237,7 @@ func GetSearchPath() (sp []string, err os.Error) {
 //	C.PHYSFS_getSearchPathCallback((*[0]uint8)(unsafe.Pointer(&c)), unsafe.Pointer(&d))
 //}
 
+// Enable or disable the following of symbolic links. Default is disabled.
 func PermitSymbolicLinks(set bool) {
 	s := C.int(0)
 	if set {
@@ -230,6 +247,7 @@ func PermitSymbolicLinks(set bool) {
 	C.PHYSFS_permitSymbolicLinks(s)
 }
 
+// Return whether or not following of symbolic links is currently enabled.
 func SymbolicLinksPermitted() (bool) {
 	if int(C.PHYSFS_symbolicLinksPermitted()) != 0 {
 		return true
@@ -238,6 +256,8 @@ func SymbolicLinksPermitted() (bool) {
 	return false
 }
 
+// Returns true if the named path exists and is a symbolic link, otherwise
+// returns false.
 func IsSymbolicLink(n string) (bool) {
 	if int(C.PHYSFS_isSymbolicLink(C.CString(n))) != 0 {
 		return true
@@ -246,6 +266,12 @@ func IsSymbolicLink(n string) (bool) {
 	return false
 }
 
+// Returns the real path to the specified file/directory. For example, if you
+// call:
+//		physfs.GetRealDir("maps/level1.map")
+// and 'maps/level1.map' actually exists at 'C:\mygame\maps\level1.map', and
+// 'C:\mygame' is in your search path, 'C:\mygame' is returned. Also returns an
+// error, if any.
 func GetRealDir(n string) (string, os.Error) {
 	dir := C.PHYSFS_getRealDir(C.CString(n))
 
@@ -256,6 +282,8 @@ func GetRealDir(n string) (string, os.Error) {
 	return C.GoString(dir), os.NewError(GetLastError())
 }
 
+// Returns a []string containing the files and directories in the specified
+// directory in your search path, and an error, if any.
 func EnumerateFiles(dir string) (list []string, err os.Error) {
 	clist := C.PHYSFS_enumerateFiles(C.CString(dir))
 
@@ -279,6 +307,8 @@ func EnumerateFiles(dir string) (list []string, err os.Error) {
 	return list, nil
 }
 
+// Returns a boolean indicating whether or not the specified file/directory
+// exists.
 func Exists(n string) (bool) {
 	if int(C.PHYSFS_exists(C.CString(n))) != 0 {
 		return true
