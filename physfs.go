@@ -1,3 +1,5 @@
+// The go-physfs package provides Go bindings for the PhysicsFS
+// archive-abstraction library.
 package physfs
 
 import(
@@ -32,7 +34,7 @@ type ArchiveInfo struct {
 	URL string
 }
 
-// Used to store information about the version PhysicsFS go-physfs was linked
+// Used to store information about the version of PhysicsFS go-physfs was linked
 // against.
 type Version struct {
 	Major uint8
