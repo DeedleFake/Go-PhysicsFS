@@ -4,6 +4,7 @@ package physfs
 
 import(
 	"os"
+	"path"
 	"time"
 	"unsafe"
 )
@@ -345,7 +346,7 @@ func DeleteRecurse(dir string) (err os.Error) {
 			return err
 		}
 		for _, i := range(files) {
-			diri := dir + GetDirSeparator() + i
+			diri := path.Join(dir, i)
 			if IsDirectory(diri) {
 				err = DeleteRecurse(diri)
 				if err != nil {
