@@ -2,11 +2,17 @@ package physfs
 
 import(
 	"os"
+	"time"
 	"unsafe"
 )
 
 // #include <physfs.h>
 import "C"
+
+const(
+	T_LOCAL = iota
+	T_UTC
+)
 
 func init() {
 	if !IsInit() {
@@ -317,6 +323,8 @@ func Exists(n string) (bool) {
 	return false
 }
 
+// Deletes the specified file or directory. Only deletes empty directories.
+// Returns an error, if any.
 func Delete(n string) (os.Error) {
 	if int(C.PHYSFS_delete(C.CString(n))) != 0 {
 		return nil
@@ -325,6 +333,7 @@ func Delete(n string) (os.Error) {
 	return os.NewError(GetLastError())
 }
 
+// Returns true if dir exists and is a directory. Otherwise, returns false.
 func IsDirectory(dir string) (bool) {
 	if int(C.PHYSFS_isDirectory(C.CString(dir))) != 0 {
 		return true
@@ -333,6 +342,8 @@ func IsDirectory(dir string) (bool) {
 	return false
 }
 
+// Creates the specified directory inside the write path. Will create any parent
+// directories that don't exist. Returns an error, if any.
 func Mkdir(dir string) (os.Error) {
 	if int(C.PHYSFS_mkdir(C.CString(dir))) != 0 {
 		return nil
@@ -341,6 +352,13 @@ func Mkdir(dir string) (os.Error) {
 	return os.NewError(GetLastError())
 }
 
+// Adds an archive or directory dir to the search path, mounting it at the
+// specified point mp in the search path. Use "" or "/" to simply add it to the
+// search path. If app is true dir is appended to the search path; otherwise it
+// is prepended. While multiple archives/directories may be mounted on the same
+// mount-point, you may not mount the same archive/directory in multiple
+// locations. Attempting to do so will simply do nothing without returning an
+// error. Returns an error, if any.
 func Mount(dir, mp string, app bool) (os.Error) {
 	a := 0
 	if app {
@@ -354,6 +372,8 @@ func Mount(dir, mp string, app bool) (os.Error) {
 	return os.NewError(GetLastError())
 }
 
+// Gets the mount-point of the specified archive/directory. Returns the
+// mount-point (Big surprise...) and an error, if any.
 func GetMountPoint(dir string) (string, os.Error) {
 	mp := C.PHYSFS_getMountPoint(C.CString(dir))
 
@@ -364,6 +384,8 @@ func GetMountPoint(dir string) (string, os.Error) {
 	return C.GoString(mp), os.NewError(GetLastError())
 }
 
+// A legacy function that is now equivalent to
+//		physfs.Mount(dir, "", app)
 func AddToSearchPath(dir string, app bool) (os.Error) {
 	a := 0
 	if app {
@@ -377,6 +399,9 @@ func AddToSearchPath(dir string, app bool) (os.Error) {
 	return os.NewError(GetLastError())
 }
 
+// Remove the specified archive/directory from search path. This will fail if
+// there any files inside the archive/directory that are still open. Returns an
+// error, if any.
 func RemoveFromSearchPath(dir string) (os.Error) {
 	if int(C.PHYSFS_removeFromSearchPath(C.CString(dir))) != 0 {
 		return nil
@@ -385,12 +410,24 @@ func RemoveFromSearchPath(dir string) (os.Error) {
 	return os.NewError(GetLastError())
 }
 
-func GetLastModTime(n string) (int64, os.Error) {
+// Returns the last time the specified file was modified in either or the local
+// time-zone or UTC, and an error, if any.
+func GetLastModTime(n string, zone int) (t *time.Time, err os.Error) {
 	num := int64(C.PHYSFS_getLastModTime(C.CString(n)))
 
 	if num != -1 {
-		return num, nil
+		err = nil
+		switch zone {
+			case T_LOCAL:
+				t = time.SecondsToLocalTime(num)
+			case T_UTC:
+				t = time.SecondsToUTC(num)
+			default:
+				err = os.NewError("Unknown zone.")
+		}
+
+		return t, err
 	}
 
-	return num, os.NewError(GetLastError())
+	return t, os.NewError(GetLastError())
 }
