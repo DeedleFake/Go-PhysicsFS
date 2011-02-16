@@ -16,6 +16,8 @@ func init() {
 	}
 }
 
+// A type used to store information about supported archive types. Due to the
+// fact that SupportedArchiveTypes() is currently broken, this is unused.
 type ArchiveInfo struct {
 	Extension string
 	Description string
@@ -23,14 +25,19 @@ type ArchiveInfo struct {
 	URL string
 }
 
+// Used to store information about the version PhysicsFS go-physfs was linked
+// against.
 type Version struct {
 	Major uint8
 	Minor uint8
 	Patch uint8
 }
 
+// A type for functions to be called by the *Callback functions. Since they're
+// currently broken, this is useless.
 type StringCallback func(interface{}, string)
 
+// Returns a boolean indicating if PhysicsFS has been initialized.
 func IsInit() (bool) {
 	if int(C.PHYSFS_isInit()) != 0 {
 		return true
@@ -39,6 +46,9 @@ func IsInit() (bool) {
 	return false
 }
 
+// Deinitialize PhysicsFS. This closes any files that have been opened by
+// PhysicsFS, clears the search and write paths, and cleans up other related
+// resources.
 func Deinit() (os.Error) {
 	if int(C.PHYSFS_deinit()) != 0 {
 		return nil
@@ -47,10 +57,16 @@ func Deinit() (os.Error) {
 	return os.NewError(GetLastError())
 }
 
+// Returns a string containing an error message related to the last error
+// that occured in a PhysicsFS function. Isn't necessary to call in most cases,
+// as functions that generate said error return them as an os.Error in
+// go-physfs.
 func GetLastError() (string) {
 	return C.GoString(C.PHYSFS_getLastError())
 }
 
+// Returns a Version containing the version of PhysicsFS that the bindings were
+// compiled against.
 func VERSION() (ver *Version) {
 	ver = new(Version)
 
@@ -61,6 +77,8 @@ func VERSION() (ver *Version) {
 	return ver
 }
 
+// Returns a Version containing the version of PhysicsFS that the bindings are
+// linked against.
 func GetLinkedVersion() (ver *Version) {
 	var v C.PHYSFS_Version
 	C.PHYSFS_getLinkedVersion(&v)
@@ -87,18 +105,25 @@ func GetLinkedVersion() (ver *Version) {
 //	return ai
 //}
 
+// Returns the the directory in which the application is. May or may not
+// correspond to the processes current working directory.
 func GetBaseDir() (string) {
 	return C.GoString(C.PHYSFS_getBaseDir())
 }
 
+// Returns the home directory of the user that ran the application.
 func GetUserDir() (string) {
 	return C.GoString(C.PHYSFS_getUserDir())
 }
 
+// Returns the current write directory. Files written using PhysicsFS can only
+// be inside the write directory. Default is nowhere, which will return a blank
+// string.
 func GetWriteDir() (string) {
 	return C.GoString(C.PHYSFS_getWriteDir())
 }
 
+// Set the current write directory. Returns an error, if any.
 func SetWriteDir(dir string) (os.Error) {
 	if int(C.PHYSFS_setWriteDir(C.CString(dir))) != 0 {
 		return nil
@@ -107,6 +132,8 @@ func SetWriteDir(dir string) (os.Error) {
 	return os.NewError(GetLastError())
 }
 
+// Gets the directory seperator for the operating system. In Windows returns
+// "\\", in Linux "/", and in MacOS versions before OS X returns ":".
 func GetDirSeparator() (string) {
 	return C.GoString(C.PHYSFS_getDirSeparator())
 }
