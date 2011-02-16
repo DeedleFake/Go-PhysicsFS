@@ -333,6 +333,36 @@ func Delete(n string) (os.Error) {
 	return os.NewError(GetLastError())
 }
 
+//func DeleteRecurse(dir string) (err os.Error) {
+//	if IsDirectory(dir) {
+//		files, err := EnumerateFiles(dir)
+//		if err != nil {
+//			return err
+//		}
+//		for _, i := range(files) {
+//			diri := dir + GetDirSeparator() + i
+//			if IsDirectory(diri) {
+//				err = DeleteRecurse(diri)
+//				if err != nil {
+//					return err
+//				}
+//			} else if Exists(diri) {
+//				err = Delete(diri)
+//				if err != nil {
+//					return err
+//				}
+//			}
+//		}
+//
+//		err = Delete(dir)
+//		if err != nil {
+//			return err
+//		}
+//	}
+//
+//	return err
+//}
+
 // Returns true if dir exists and is a directory. Otherwise, returns false.
 func IsDirectory(dir string) (bool) {
 	if int(C.PHYSFS_isDirectory(C.CString(dir))) != 0 {
