@@ -88,17 +88,16 @@ func (f *File)Tell() (int64, os.Error) {
 	return r, nil
 }
 
-// Change the position in the file to the specified offset. none is only for
-// compatability with io.Seeker and is ignored. Returns an ignorable value that
-// is, once again, only for campatability, and an error, if any.
-func (f *File)Seek(offset int64, none int) (int64, os.Error) {
+// Change the position in the file to the specified offset. Returns an error,
+// if any.
+func (f *File)Seek(offset int64) (os.Error) {
 	r := int64(C.PHYSFS_seek((*C.PHYSFS_File)(f), C.PHYSFS_uint64(offset)))
 
 	if r == 0 {
-		return r, os.NewError(GetLastError())
+		return os.NewError(GetLastError())
 	}
 
-	return r, nil
+	return nil
 }
 
 // Returns the total length of the file and an error, if any.
