@@ -7,8 +7,8 @@ CLEANFILES+=\
 			file2\
 			test-dir\
 
-GC=$Og -I ../_obj
-LD=$Ol -L ../_obj
+GC=$Og -I ../physfs/_obj
+LD=$Ol -L ../physfs/_obj
 
 .PHONY: all
 

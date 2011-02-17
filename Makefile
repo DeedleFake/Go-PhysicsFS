@@ -1,16 +1,17 @@
-include $(GOROOT)/src/Make.inc
+MAKE=gomake
 
-TARG=physfs
-CGOFILES=\
-         physfs.go\
-         file.go\
+SRCDIR:=physfs
 
-CGO_LDFLAGS=-lphysfs
+.PHONY: all install test clean
 
-CLEANFILES+=\
-			doc.html\
+all:
+	$(MAKE) -C $(SRCDIR) $@
 
-include $(GOROOT)/src/Make.pkg
+install: all
+	$(MAKE) -C $(SRCDIR) $@
 
-doc:
-	godoc -html -path=. . > doc.html
+test:
+	$(MAKE) -C $(SRCDIR) $@
+
+clean:
+	$(MAKE) -C $(SRCDIR) $@
