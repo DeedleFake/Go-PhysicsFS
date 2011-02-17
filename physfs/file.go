@@ -88,16 +88,36 @@ func (f *File)Tell() (int64, os.Error) {
 	return r, nil
 }
 
-// Change the position in the file to the specified offset. Returns an error,
-// if any.
-func (f *File)Seek(offset int64) (os.Error) {
-	r := int64(C.PHYSFS_seek((*C.PHYSFS_File)(f), C.PHYSFS_uint64(offset)))
-
-	if r == 0 {
-		return os.NewError(GetLastError())
+// Change the position in the file to the specified offset. If whence if 0, the
+// offset is relative to the beggining of the file; if whence is 1, it's
+// relative to the current offset; if whence is 2 it's relative to the end of
+// the file. Returns the new offset and an error, if any.
+func (f *File)Seek(offset int64, whence int) (int64, os.Error) {
+	newoff := offset
+	switch whence {
+		case 0:
+			break
+		case 1:
+			cp, err := f.Tell()
+			if err != nil {
+				return newoff + cp, err
+			}
+			newoff += cp
+		case 2:
+			eof, err := f.Length()
+			if err != nil {
+				return eof + newoff, err
+			}
+			newoff += eof
 	}
 
-	return nil
+	r := int64(C.PHYSFS_seek((*C.PHYSFS_File)(f), C.PHYSFS_uint64(newoff)))
+
+	if r == 0 {
+		return newoff, os.NewError(GetLastError())
+	}
+
+	return newoff, nil
 }
 
 // Returns the total length of the file and an error, if any.
