@@ -1,4 +1,4 @@
-go-physfs
+Go-PhysicsFS
 ======
 
 This Go package provides bindings for the [PhysicsFS][physfs] library. PhysicsFS is a library to provide abstract access to various archives. It provides an easy method to access files in various locations, even inside archives, without having to worry about their actual locations, similar to Quake 3's file subsystem.
