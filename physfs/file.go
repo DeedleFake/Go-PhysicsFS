@@ -6,6 +6,7 @@ import(
 	"unsafe"
 )
 
+// #include <stdlib.h>
 // #include <physfs.h>
 import "C"
 
@@ -17,13 +18,15 @@ type File C.PHYSFS_File
 // arguments to flag 'os.O_RDONLY', 'os.O_WRONLY', and 'os.O_WRONLY
 // | os.APPEND'. Returns the file and an error, if any.
 func Open(name string, flag int) (f *File, err os.Error) {
+	cname := C.CString(name)
+	defer C.free(unsafe.Pointer(cname))
 	switch flag {
 		case os.O_RDONLY:
-			f = (*File)(C.PHYSFS_openRead(C.CString(name)))
+			f = (*File)(C.PHYSFS_openRead(cname))
 		case os.O_WRONLY:
-			f = (*File)(C.PHYSFS_openWrite(C.CString(name)))
+			f = (*File)(C.PHYSFS_openWrite(cname))
 		case os.O_WRONLY | os.O_APPEND:
-			f = (*File)(C.PHYSFS_openAppend(C.CString(name)))
+			f = (*File)(C.PHYSFS_openAppend(cname))
 		default:
 			return nil, os.NewError("Unknown flag(s).")
 	}
