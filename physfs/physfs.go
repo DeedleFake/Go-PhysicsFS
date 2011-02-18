@@ -26,8 +26,7 @@ func init() {
 	}
 }
 
-// A type used to store information about supported archive types. Due to the
-// fact that SupportedArchiveTypes() is currently broken, this is unused.
+// A type used to store information about supported archive types.
 type ArchiveInfo struct {
 	Extension string
 	Description string
@@ -108,23 +107,31 @@ func GetLinkedVersion() (ver *Version) {
 	return ver
 }
 
-//func SupportedArchiveTypes() (ai []ArchiveInfo) {
-//	cai := C.PHYSFS_supportedArchiveTypes()
-//
-//	i := uintptr(0)
-//	for {
-//		archive := *(**C.PHYSFS_ArchiveInfo)(unsafe.Pointer(uintptr(unsafe.Pointer(cai)) + i))
-//		if archive == nil {
-//			break
-//		}
-//
-//		ai = append(ai, *(*ArchiveInfo)(unsafe.Pointer(archive)))
-//
-//		i += uintptr(unsafe.Sizeof(cai))
-//	}
-//
-//	return ai
-//}
+// Returns an []ArchiveInfo containing information about all the archives
+// supported by PhysicsFS.
+func SupportedArchiveTypes() (ai []ArchiveInfo) {
+	cai := C.PHYSFS_supportedArchiveTypes()
+
+	i := uintptr(0)
+	for {
+		archive := *(**C.PHYSFS_ArchiveInfo)(unsafe.Pointer(uintptr(unsafe.Pointer(cai)) + i))
+		if archive == nil {
+			break
+		}
+
+		var a ArchiveInfo
+		a.Extension = C.GoString(archive.extension)
+		a.Description = C.GoString(archive.description)
+		a.Author = C.GoString(archive.author)
+		a.URL = C.GoString(archive.url)
+
+		ai = append(ai, a)
+
+		i += uintptr(unsafe.Sizeof(cai))
+	}
+
+	return ai
+}
 
 // Returns the the directory in which the application is. May or may not
 // correspond to the processes current working directory.
