@@ -50,10 +50,14 @@ func (f *File)Read(buf []byte) (n int, err os.Error) {
 	n = int(C.PHYSFS_read((*C.PHYSFS_File)(f), unsafe.Pointer(&buf[0]), 1, C.PHYSFS_uint32(len(buf))))
 
 	if n == -1 {
-		return n, os.NewError(GetLastError())
+		err = os.NewError(GetLastError())
 	}
 
-	return n, nil
+	if f.EOF() {
+		err = os.EOF
+	}
+
+	return n, err
 }
 
 // Write the bytes in buf to the file. Returns the number of bytes written and

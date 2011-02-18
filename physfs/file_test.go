@@ -30,7 +30,7 @@ func TestFile(t *testing.T) {
 	}
 	buffer := make([]byte, 256)
 	n, err := file1.Read(buffer)
-	if err != nil {
+	if (err != nil) && (err != os.EOF) {
 		t.Fatalf("Error: %v\n", err.String())
 	}
 	fmt.Printf("%v\n", string(buffer[0:n]))
@@ -57,7 +57,7 @@ func TestFile(t *testing.T) {
 		t.Fatalf("Error: %v\n", err.String())
 	}
 	n, err = file2.Read(buffer)
-	if err != nil {
+	if (err != nil) && (err != os.EOF) {
 		t.Fatalf("Error: %v\n", err.String())
 	}
 	fmt.Printf("%v: %v\n", np, string(buffer[0:n]))
