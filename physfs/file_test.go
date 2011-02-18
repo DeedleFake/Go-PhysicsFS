@@ -14,12 +14,12 @@ func TestFile(t *testing.T) {
 		}
 	}
 
-	err := Mount("test/zip1.aoi", "", true)
+	err := Mount("../test/zip1.aoi", "", true)
 	if err != nil {
 		t.Fatalf("Error: %v\n", err.String())
 	}
 
-	err = Mount("test", "dir2", true)
+	err = Mount("../test", "dir2", true)
 	if err != nil {
 		t.Fatalf("Error: %v\n", err.String())
 	}
@@ -36,7 +36,7 @@ func TestFile(t *testing.T) {
 	fmt.Printf("%v\n", string(buffer[0:n]))
 	file1.Close()
 
-	SetWriteDir("test")
+	SetWriteDir("../test")
 	file2, err := Open("file2", os.O_WRONLY)
 	if err != nil {
 		t.Fatalf("Error: %v\n", err.String())
@@ -48,11 +48,19 @@ func TestFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error: %v\n", err.String())
 	}
+	_, err = file2.Seek(-60, 2)
+	if err != nil {
+		t.Fatalf("Error: %v\n", err.String())
+	}
+	np, err := file2.Seek(14, 1)
+	if err != nil {
+		t.Fatalf("Error: %v\n", err.String())
+	}
 	n, err = file2.Read(buffer)
 	if err != nil {
 		t.Fatalf("Error: %v\n", err.String())
 	}
-	fmt.Printf("%v\n", string(buffer[0:n]))
+	fmt.Printf("%v: %v\n", np, string(buffer[0:n]))
 	file2.Close()
 
 	err = Delete("file2")
