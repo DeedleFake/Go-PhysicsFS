@@ -2,6 +2,7 @@ package physfs
 
 import(
 	"os"
+	"fmt"
 	"unsafe"
 )
 
@@ -91,7 +92,8 @@ func (f *File)Tell() (int64, os.Error) {
 // Change the position in the file to the specified offset. If whence if 0, the
 // offset is relative to the beggining of the file; if whence is 1, it's
 // relative to the current offset; if whence is 2 it's relative to the end of
-// the file. Returns the new offset and an error, if any.
+// the file. Any other value will result in an error. Returns the new offset
+// and an error, if any.
 func (f *File)Seek(offset int64, whence int) (int64, os.Error) {
 	newoff := offset
 	switch whence {
@@ -109,6 +111,8 @@ func (f *File)Seek(offset int64, whence int) (int64, os.Error) {
 				return eof + newoff, err
 			}
 			newoff += eof
+		default:
+			return newoff, os.NewError(fmt.Sprintf("Unknown value for whence: %v", whence))
 	}
 
 	r := int64(C.PHYSFS_seek((*C.PHYSFS_File)(f), C.PHYSFS_uint64(newoff)))
