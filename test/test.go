@@ -38,13 +38,24 @@ func main() {
 	sp, _ := physfs.GetSearchPath()
 	fmt.Printf("%v\n\n", sp)
 
-	//physfs.GetSearchPathCallback(func(d interface{}, i string) {
-	//	fmt.Printf("%v\n", i)
-	//}, nil)
-	//fmt.Printf("\n")
+	physfs.GetSearchPathCallback(func(data interface{}, str string) {
+		fmt.Printf("SearchPath From Callback: %v\n", str)
+		fmt.Printf("Got Data: %v\n", data)
+	}, "This is a test.")
+	fmt.Printf("\n")
+
+	physfs.GetCdRomDirsCallback(func(data interface{}, str string) {
+		fmt.Printf("CdRomDirs From Callback: %v\n", str)
+	}, nil)
+	fmt.Printf("\n")
 
 	list, _ := physfs.EnumerateFiles("/")
 	fmt.Printf("%v\n\n", list)
+
+	physfs.EnumerateFilesCallback("/", func(data interface{}, od string, fn string) {
+		fmt.Printf("EnumerateFiles From Callback: %v/%v\n", od, fn)
+	}, nil)
+	fmt.Printf("\n")
 
 	err = physfs.SetWriteDir(physfs.GetBaseDir())
 	if err != nil {

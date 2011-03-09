@@ -5,10 +5,13 @@ CGOFILES=\
          physfs.go\
          file.go\
 
-CGO_LDFLAGS=-lphysfs
+CGO_LDFLAGS+=-lphysfs
 
 CLEANFILES+=\
 			doc.html\
+
+CGO_OFILES+=\
+			wrapcb.o
 
 include $(GOROOT)/src/Make.pkg
 

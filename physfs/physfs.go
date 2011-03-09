@@ -11,6 +11,8 @@ import(
 
 // #include <stdlib.h>
 // #include <physfs.h>
+//
+// #include "wrapcb.h"
 import "C"
 
 const(
@@ -46,6 +48,30 @@ type Version struct {
 // A type for functions to be called by the *Callback functions. Since they're
 // currently broken, this is useless.
 type StringCallback func(interface{}, string)
+
+type contextStringCallback struct {
+	cb StringCallback
+	data interface{}
+}
+
+//export wrapStringCallback
+func wrapStringCallback(data unsafe.Pointer, str *C.char) {
+	csc := (*contextStringCallback)(data)
+	csc.cb(csc.data, C.GoString(str))
+}
+
+type EnumFilesCallback func(interface{}, string, string)
+
+type contextEnumFilesCallback struct {
+	cb EnumFilesCallback
+	data interface{}
+}
+
+//export wrapEnumFilesCallback
+func wrapEnumFilesCallback(data unsafe.Pointer, origdir *C.char, fname *C.char) {
+	cefc := (*contextEnumFilesCallback)(data)
+	cefc.cb(cefc.data, C.GoString(origdir), C.GoString(fname))
+}
 
 // Returns a boolean indicating if PhysicsFS has been initialized.
 func IsInit() (bool) {
@@ -86,7 +112,6 @@ func Deinit() (os.Error) {
 // go-physfs.
 func GetLastError() (string) {
 	cerr := C.PHYSFS_getLastError()
-	defer C.free(unsafe.Pointer(cerr))
 	return C.GoString(cerr)
 }
 
@@ -142,14 +167,12 @@ func SupportedArchiveTypes() (ai []ArchiveInfo) {
 // correspond to the processes current working directory.
 func GetBaseDir() (string) {
 	cdir := C.PHYSFS_getBaseDir()
-	defer C.free(unsafe.Pointer(cdir))
 	return C.GoString(cdir)
 }
 
 // Returns the home directory of the user that ran the application.
 func GetUserDir() (string) {
 	cdir := C.PHYSFS_getUserDir()
-	defer C.free(unsafe.Pointer(cdir))
 	return C.GoString(cdir)
 }
 
@@ -158,7 +181,6 @@ func GetUserDir() (string) {
 // string.
 func GetWriteDir() (string) {
 	cdir := C.PHYSFS_getWriteDir()
-	defer C.free(unsafe.Pointer(cdir))
 	return C.GoString(cdir)
 }
 
@@ -177,7 +199,6 @@ func SetWriteDir(dir string) (os.Error) {
 // "\\", in Linux "/", and in MacOS versions before OS X returns ":".
 func GetDirSeparator() (string) {
 	cdir := C.PHYSFS_getDirSeparator()
-	defer C.free(unsafe.Pointer(cdir))
 	return C.GoString(cdir)
 }
 
@@ -242,9 +263,35 @@ func GetCdRomDirs() (sp []string, err os.Error) {
 	return sp, nil
 }
 
-//func GetCdRomDirsCallback(c StringCallback, d interface{}) {
-//	C.PHYSFS_getCdRomDirsCallback((*[0]uint8)(unsafe.Pointer(&c)), unsafe.Pointer(&d))
-//}
+func GetCdRomDirsCallback(c StringCallback, d interface{}) {
+	csc := &contextStringCallback{
+		cb: c,
+		data: d,
+	}
+
+	C.getCdRomDirsCallback(unsafe.Pointer(csc))
+}
+
+func GetSearchPathCallback(c StringCallback, d interface{}) {
+	csc := &contextStringCallback{
+		cb: c,
+		data: d,
+	}
+
+	C.getSearchPathCallback(unsafe.Pointer(csc))
+}
+
+func EnumerateFilesCallback(dir string, c EnumFilesCallback, d interface{}) {
+	cdir := C.CString(dir)
+	defer C.free(unsafe.Pointer(cdir))
+
+	cefc := &contextEnumFilesCallback{
+		cb: c,
+		data: d,
+	}
+
+	C.enumerateFilesCallback(cdir, unsafe.Pointer(cefc))
+}
 
 // Returns a []string with the current search path, in order, and an error, if
 // any.
@@ -316,7 +363,6 @@ func GetRealDir(n string) (string, os.Error) {
 	cn := C.CString(n)
 	defer C.free(unsafe.Pointer(cn))
 	dir := C.PHYSFS_getRealDir(cn)
-	defer C.free(unsafe.Pointer(dir))
 
 	if dir != nil {
 		return C.GoString(dir), nil
@@ -463,7 +509,6 @@ func GetMountPoint(dir string) (string, os.Error) {
 	cdir := C.CString(dir)
 	defer C.free(unsafe.Pointer(cdir))
 	mp := C.PHYSFS_getMountPoint(cdir)
-	defer C.free(unsafe.Pointer(mp))
 
 	if mp != nil {
 		return C.GoString(mp), nil
