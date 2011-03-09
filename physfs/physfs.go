@@ -1,4 +1,4 @@
-// The go-physfs package provides Go bindings for the PhysicsFS
+// The physfs package provides Go bindings for the PhysicsFS
 // archive-abstraction library.
 package physfs
 
@@ -45,8 +45,7 @@ type Version struct {
 	Patch uint8
 }
 
-// A type for functions to be called by the *Callback functions. Since they're
-// currently broken, this is useless.
+// The func type required by GetCdRomDirsCallback and GetSearchPathCallback.
 type StringCallback func(interface{}, string)
 
 type contextStringCallback struct {
@@ -60,6 +59,7 @@ func wrapStringCallback(data unsafe.Pointer, str *C.char) {
 	csc.cb(csc.data, C.GoString(str))
 }
 
+// The func type required by EnumerateFilesCallback.
 type EnumFilesCallback func(interface{}, string, string)
 
 type contextEnumFilesCallback struct {
@@ -263,6 +263,7 @@ func GetCdRomDirs() (sp []string, err os.Error) {
 	return sp, nil
 }
 
+// Call c for each detected CD-ROM directrory, passing it d and the dir.
 func GetCdRomDirsCallback(c StringCallback, d interface{}) {
 	csc := &contextStringCallback{
 		cb: c,
@@ -272,6 +273,7 @@ func GetCdRomDirsCallback(c StringCallback, d interface{}) {
 	C.getCdRomDirsCallback(unsafe.Pointer(csc))
 }
 
+// Call c for each entry in the SearchPath, passing it d and the dir.
 func GetSearchPathCallback(c StringCallback, d interface{}) {
 	csc := &contextStringCallback{
 		cb: c,
@@ -281,6 +283,7 @@ func GetSearchPathCallback(c StringCallback, d interface{}) {
 	C.getSearchPathCallback(unsafe.Pointer(csc))
 }
 
+// Call c for each file in dir, passing it d, dir, and the file.
 func EnumerateFilesCallback(dir string, c EnumFilesCallback, d interface{}) {
 	cdir := C.CString(dir)
 	defer C.free(unsafe.Pointer(cdir))
