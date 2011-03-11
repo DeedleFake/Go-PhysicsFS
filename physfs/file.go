@@ -10,25 +10,41 @@ import(
 // #include <physfs.h>
 import "C"
 
+// A type for the flag argument to Open().
+type OpenFlag int
+
+// Constants to be passed to Open() telling it what mode to open the file in.
+const(
+	// Open the file read-only.
+	O_RDONLY OpenFlag = iota + 1
+
+	// Open the file write-only.
+	O_WRONLY
+
+	// Open the file append-only. All writes will be appended.
+	O_APNDONLY
+)
+
 // A handle for PhysicsFS. Designed to be as close to compatible as possible
 // with os.File.
 type File C.PHYSFS_File
 
-// Open the named file with the mode specified by flag. The only supported
-// arguments to flag 'os.O_RDONLY', 'os.O_WRONLY', and 'os.O_WRONLY
-// | os.APPEND'. Returns the file and an error, if any.
-func Open(name string, flag int) (f *File, err os.Error) {
+// Open the named file with the mode specified by flag. Read-only files are
+// opened from the search-path, and write-only and append-only files are opened
+// relative to the current write directory. Returns the file and an error, if
+// any.
+func Open(name string, flag OpenFlag) (f *File, err os.Error) {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 	switch flag {
-		case os.O_RDONLY:
+		case O_RDONLY:
 			f = (*File)(C.PHYSFS_openRead(cname))
-		case os.O_WRONLY:
+		case O_WRONLY:
 			f = (*File)(C.PHYSFS_openWrite(cname))
-		case os.O_WRONLY | os.O_APPEND:
+		case O_APNDONLY:
 			f = (*File)(C.PHYSFS_openAppend(cname))
 		default:
-			return nil, os.NewError("Unknown flag(s).")
+			return nil, os.NewError("Unknown flag.")
 	}
 
 	if f == nil {
