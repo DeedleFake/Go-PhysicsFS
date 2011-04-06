@@ -20,15 +20,6 @@ const(
 	T_UTC
 )
 
-func init() {
-	if !IsInit() {
-		err := Init()
-		if err != nil {
-			panic(err)
-		}
-	}
-}
-
 // A type used to store information about supported archive types.
 type ArchiveInfo struct {
 	Extension string
@@ -82,8 +73,8 @@ func IsInit() (bool) {
 	return false
 }
 
-// Initialize PhysicsFS. Done automatically upon import, but can be necessary
-// if PhysicsFS was deinitialized. Returns an error, if any.
+// Initialize PhysicsFS. Must be called before most functions will work. Returns
+// an error, if any.
 func Init() (os.Error) {
 	arg0 := C.CString(os.Args[0])
 	defer C.free(unsafe.Pointer(arg0))
