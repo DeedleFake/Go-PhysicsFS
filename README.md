@@ -22,7 +22,7 @@ Usage:
 ------
 
 To import, simply use the following:
-> import "physfs"
+    import "physfs"
 
 Authors
 -------
@@ -31,3 +31,7 @@ Authors
 
 [physfs]: http://www.icculus.org/physfs/
 [go]: http://www.golang.org
+
+<!--
+    vim:ts=4 sw=4 et
+-->
