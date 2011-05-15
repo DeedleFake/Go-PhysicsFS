@@ -10,38 +10,44 @@ import(
 // #include <physfs.h>
 import "C"
 
-// A type for the flag argument to Open().
-type OpenFlag int
-
-// Constants to be passed to Open() telling it what mode to open the file in.
-const(
-	// Open the file read-only.
-	O_RDONLY OpenFlag = iota + 1
-
-	// Open the file write-only.
-	O_WRONLY
-
-	// Open the file append-only. All writes will be appended.
-	O_APNDONLY
-)
-
-// A handle for PhysicsFS. Designed to be as close to compatible as possible
-// with os.File.
+// A type for PhysicsFS file operations. Designed to be as compatible as
+// possible with os.File.
 type File C.PHYSFS_File
+
+// Open the named file, relative to the current write dir, for writing. The
+// specified file is created if it doesn't exist. If it does exist it is
+// truncated to zero bytes. Returns the file and an error, if any.
+func Create(name string) (file *File, err os.Error) {
+	return openFile(name, os.O_WRONLY)
+}
+
+// Open the named file, relative the current write dir, for writing. The
+// specified file is created if it doesn't exist. If it does exist, the writing
+// offset is set to the end of the file so that writes will append to the file.
+// Returns the file and an error, if any.
+func Append(name string) (file *File, err os.Error) {
+	return openFile(name, os.O_APPEND)
+}
+
+// Open the named file from the search path for reading. Returns the file and an
+// error, if any.
+func Open(name string) (file *File, err os.Error) {
+	return openFile(name, os.O_RDONLY)
+}
 
 // Open the named file with the mode specified by flag. Read-only files are
 // opened from the search-path, and write-only and append-only files are opened
 // relative to the current write directory. Returns the file and an error, if
 // any.
-func Open(name string, flag OpenFlag) (f *File, err os.Error) {
+func openFile(name string, flag int) (f *File, err os.Error) {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 	switch flag {
-		case O_RDONLY:
+		case os.O_RDONLY:
 			f = (*File)(C.PHYSFS_openRead(cname))
-		case O_WRONLY:
+		case os.O_WRONLY:
 			f = (*File)(C.PHYSFS_openWrite(cname))
-		case O_APNDONLY:
+		case os.O_APPEND:
 			f = (*File)(C.PHYSFS_openAppend(cname))
 		default:
 			return nil, os.NewError("Unknown flag.")

@@ -18,7 +18,7 @@ func main() {
 	fmt.Printf("\n")
 
 	buffer := make([]byte, 1024)
-	file1, err := physfs.Open("dir1/file1", os.O_RDONLY)
+	file1, err := physfs.Open("dir1/file1")
 	if err != nil {
 		fmt.Printf("Error: %v\n", err.String())
 		os.Exit(1)
@@ -27,7 +27,7 @@ func main() {
 	fmt.Printf("%v\n", string(buffer[0:n]))
 	file1.Close()
 
-	file2, err := physfs.Open("file2", os.O_WRONLY)
+	file2, err := physfs.Create("file2")
 	if err != nil {
 		fmt.Printf("Error: %v\n", err.String())
 		os.Exit(1)

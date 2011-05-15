@@ -24,7 +24,7 @@ func TestFile(t *testing.T) {
 		t.Fatalf("Error: %v\n", err.String())
 	}
 
-	file1, err := Open("dir1/file1", O_RDONLY)
+	file1, err := Open("dir1/file1")
 	if err != nil {
 		t.Fatalf("Error: %v\n", err.String())
 	}
@@ -37,14 +37,14 @@ func TestFile(t *testing.T) {
 	file1.Close()
 
 	SetWriteDir("../test")
-	file2, err := Open("file2", O_WRONLY)
+	file2, err := Create("file2")
 	if err != nil {
 		t.Fatalf("Error: %v\n", err.String())
 	}
 	fmt.Fprintf(file2, "This is a test.\nThis is also a test.\nThis is yet another test.")
 	file2.Close()
 
-	file2, err = Open("dir2/file2", O_RDONLY)
+	file2, err = Open("dir2/file2")
 	if err != nil {
 		t.Fatalf("Error: %v\n", err.String())
 	}
