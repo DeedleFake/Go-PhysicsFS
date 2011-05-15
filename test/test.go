@@ -7,7 +7,18 @@ import(
 )
 
 func main() {
-	physfs.SetSaneConfig("test-go-physfs", "", "aoi", false, false)
+	err := physfs.Init()
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	err = physfs.SetSaneConfig("test-go-physfs", "", "aoi", false, false)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err.String())
+		os.Exit(1)
+	}
+
 	ver := physfs.VERSION()
 	fmt.Printf("Version:\n\tMajor: %v\n\tMinor: %v\n\tPatch: %v\n\n", ver.Major, ver.Minor, ver.Patch)
 	linkver := physfs.GetLinkedVersion()
@@ -20,7 +31,7 @@ func main() {
 	buffer := make([]byte, 1024)
 	file1, err := physfs.Open("dir1/file1")
 	if err != nil {
-		fmt.Printf("Error: %v\n", err.String())
+		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
 	}
 	n, _ := file1.Read(buffer)
@@ -29,7 +40,7 @@ func main() {
 
 	file2, err := physfs.Create("file2")
 	if err != nil {
-		fmt.Printf("Error: %v\n", err.String())
+		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
 	}
 	fmt.Fprintf(file2, "This is also a test.")
@@ -59,14 +70,14 @@ func main() {
 
 	err = physfs.SetWriteDir(physfs.GetBaseDir())
 	if err != nil {
-		fmt.Printf("Error: %v\n", err.String())
+		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
 	}
 
 	fmt.Printf("Recursively deleting 'test-dir'...\n")
 	err = physfs.DeleteRecurse("test-dir")
 	if err != nil {
-		fmt.Printf("Error: %v\n", err.String())
+		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
 	}
 	fmt.Printf("Succeeded.\n\n")

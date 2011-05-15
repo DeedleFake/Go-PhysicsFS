@@ -166,6 +166,7 @@ func (f *File)Length() (int64, os.Error) {
 
 // Set up buffering for a PhysicsFS file handle. The following is copied almost
 // verbatim from the PhysicsFS API reference:
+//
 // Define an i/o buffer for a file handle. A memory block of size bytes
 // will be allocated and associated with the file. For files opened for reading,
 // up to size bytes are read from the file and stored in the internal
@@ -178,10 +179,11 @@ func (f *File)Length() (int64, os.Error) {
 // implicitly causes a flush...check your return values! Seeking, etc
 // transparently accounts for buffering. You can resize an existing buffer by
 // calling this function more than once on the same file. Setting the buffer
-// size to zero will free an existing buffer. PhysicsFS file handles are unbuffered by default. Please check the return value of this function! Failures can
-// include not being able to seek backwards in a read-only file when removing
-// the buffer, not being able to allocate the buffer, and not being able to
-// flush the buffer to disk, among other unexpected problems.
+// size to zero will free an existing buffer. PhysicsFS file handles are
+// unbuffered by default. Please check the return value of this function!
+// Failures can include not being able to seek backwards in a read-only file
+// when removing the buffer, not being able to allocate the buffer, and not
+// being able to flush the buffer to disk, among other unexpected problems.
 func (f *File)SetBuffer(size uint64) (os.Error) {
 	if int(C.PHYSFS_setBuffer((*C.PHYSFS_File)(f), C.PHYSFS_uint64(size))) != 0 {
 		return nil

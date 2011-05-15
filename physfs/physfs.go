@@ -197,7 +197,7 @@ func GetDirSeparator() (string) {
 // 'GetUserDir()/.org/app', which is created if it doesn't exist. The search
 // path is set to the write path, GetBaseDir(), any deteced CD-ROM directories,
 // if specified by cd, and any archives found in any of the previously listed
-// locations that have extensions that match ext. Do not automatically load
+// locations that have extensions that match ext. To not automatically load
 // archives, simply give a blank string. Do not specifiy a '.' before the
 // extension. If pre is true the archives are prepended to the search path; if
 // false they are appended.
@@ -219,7 +219,8 @@ func SetSaneConfig(org, app, ext string, cd, pre bool) (os.Error) {
 	cext := C.CString(ext)
 	defer C.free(unsafe.Pointer(cext))
 
-	if int(C.PHYSFS_setSaneConfig(corg, capp, cext, C.int(cdArg), C.int(preArg))) != 0 {
+	r := C.PHYSFS_setSaneConfig(corg, capp, cext, C.int(cdArg), C.int(preArg))
+	if int(r) != 0 {
 		return nil
 	}
 
