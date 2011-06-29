@@ -13,9 +13,11 @@ Installation
 ------------
 
 To install simply type:
+
 > make install
 
 If you don't have write permission for GOROOT, you may need to run the previous command as root. If you get errors while trying to run it using sudo, it's possible that the GOROOT/GOOS/GOARCH/GOBIN variables are not available to the make command. You an try using '-E' to preserve the environment:
+
 > sudo -E make install
 
 Usage:
