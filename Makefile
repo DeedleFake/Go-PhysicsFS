@@ -7,11 +7,8 @@ SRCDIR:=physfs
 all:
 	$(MAKE) -C $(SRCDIR) $@
 
-install: all
+install install.clean: all
 	$(MAKE) -C $(SRCDIR) $@
 
-test:
-	$(MAKE) -C $(SRCDIR) $@
-
-clean:
+test clean:
 	$(MAKE) -C $(SRCDIR) $@
