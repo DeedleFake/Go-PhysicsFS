@@ -9,6 +9,7 @@ import(
 	"unsafe"
 )
 
+// #cgo LDFLAGS: -lphysfs
 // #include <stdlib.h>
 // #include <physfs.h>
 //

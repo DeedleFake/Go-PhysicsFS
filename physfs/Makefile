@@ -5,8 +5,6 @@ CGOFILES=\
          physfs.go\
          file.go\
 
-CGO_LDFLAGS+=-lphysfs
-
 CLEANFILES+=\
 			doc.html\
 
