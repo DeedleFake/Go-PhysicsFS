@@ -13,5 +13,10 @@ CGO_OFILES+=\
 
 include $(GOROOT)/src/Make.pkg
 
+.PHONY: doc fmt
+
 doc:
 	godoc -html -path=. . > doc.html
+
+fmt:
+	gofmt -w $(CGOFILES)

@@ -2,7 +2,7 @@
 // archive-abstraction library.
 package physfs
 
-import(
+import (
 	"os"
 	"path"
 	"time"
@@ -16,17 +16,17 @@ import(
 // #include "wrapcb.h"
 import "C"
 
-const(
+const (
 	T_LOCAL = iota
 	T_UTC
 )
 
 // A type used to store information about supported archive types.
 type ArchiveInfo struct {
-	Extension string
+	Extension   string
 	Description string
-	Author string
-	URL string
+	Author      string
+	URL         string
 }
 
 // Used to store information about the version of PhysicsFS go-physfs was linked
@@ -41,7 +41,7 @@ type Version struct {
 type StringCallback func(interface{}, string)
 
 type contextStringCallback struct {
-	cb StringCallback
+	cb   StringCallback
 	data interface{}
 }
 
@@ -55,7 +55,7 @@ func wrapStringCallback(data unsafe.Pointer, str *C.char) {
 type EnumFilesCallback func(interface{}, string, string)
 
 type contextEnumFilesCallback struct {
-	cb EnumFilesCallback
+	cb   EnumFilesCallback
 	data interface{}
 }
 
@@ -66,7 +66,7 @@ func wrapEnumFilesCallback(data unsafe.Pointer, origdir *C.char, fname *C.char) 
 }
 
 // Returns a boolean indicating if PhysicsFS has been initialized.
-func IsInit() (bool) {
+func IsInit() bool {
 	if int(C.PHYSFS_isInit()) != 0 {
 		return true
 	}
@@ -76,7 +76,7 @@ func IsInit() (bool) {
 
 // Initialize PhysicsFS. Must be called before most functions will work. Returns
 // an error, if any.
-func Init() (os.Error) {
+func Init() os.Error {
 	arg0 := C.CString(os.Args[0])
 	defer C.free(unsafe.Pointer(arg0))
 	if int(C.PHYSFS_init(arg0)) != 0 {
@@ -90,7 +90,7 @@ func Init() (os.Error) {
 // PhysicsFS, clears the search and write paths, forgets other settings, such as
 // whether or not symbolic links are permitted, and cleans up other related
 // resources.
-func Deinit() (os.Error) {
+func Deinit() os.Error {
 	if int(C.PHYSFS_deinit()) != 0 {
 		return nil
 	}
@@ -102,7 +102,7 @@ func Deinit() (os.Error) {
 // that occured in a PhysicsFS function. Isn't necessary to call in most cases,
 // as functions that generate said error return them as an os.Error in
 // go-physfs.
-func GetLastError() (string) {
+func GetLastError() string {
 	cerr := C.PHYSFS_getLastError()
 	return C.GoString(cerr)
 }
@@ -157,13 +157,13 @@ func SupportedArchiveTypes() (ai []ArchiveInfo) {
 
 // Returns the the directory in which the application is. May or may not
 // correspond to the processes current working directory.
-func GetBaseDir() (string) {
+func GetBaseDir() string {
 	cdir := C.PHYSFS_getBaseDir()
 	return C.GoString(cdir)
 }
 
 // Returns the home directory of the user that ran the application.
-func GetUserDir() (string) {
+func GetUserDir() string {
 	cdir := C.PHYSFS_getUserDir()
 	return C.GoString(cdir)
 }
@@ -171,13 +171,13 @@ func GetUserDir() (string) {
 // Returns the current write directory. Files written using PhysicsFS can only
 // be inside the write directory. Default is nowhere, which will return a blank
 // string.
-func GetWriteDir() (string) {
+func GetWriteDir() string {
 	cdir := C.PHYSFS_getWriteDir()
 	return C.GoString(cdir)
 }
 
 // Set the current write directory. Returns an error, if any.
-func SetWriteDir(dir string) (os.Error) {
+func SetWriteDir(dir string) os.Error {
 	cdir := C.CString(dir)
 	defer C.free(unsafe.Pointer(cdir))
 	if int(C.PHYSFS_setWriteDir(cdir)) != 0 {
@@ -189,7 +189,7 @@ func SetWriteDir(dir string) (os.Error) {
 
 // Gets the directory seperator for the operating system. In Windows returns
 // "\\", in Linux "/", and in MacOS versions before OS X returns ":".
-func GetDirSeparator() (string) {
+func GetDirSeparator() string {
 	cdir := C.PHYSFS_getDirSeparator()
 	return C.GoString(cdir)
 }
@@ -202,7 +202,7 @@ func GetDirSeparator() (string) {
 // archives, simply give a blank string. Do not specifiy a '.' before the
 // extension. If pre is true the archives are prepended to the search path; if
 // false they are appended.
-func SetSaneConfig(org, app, ext string, cd, pre bool) (os.Error) {
+func SetSaneConfig(org, app, ext string, cd, pre bool) os.Error {
 	cdArg := 0
 	if cd {
 		cdArg = 1
@@ -259,7 +259,7 @@ func GetCdRomDirs() (sp []string, err os.Error) {
 // Call c for each detected CD-ROM directrory, passing it d and the dir.
 func GetCdRomDirsCallback(c StringCallback, d interface{}) {
 	csc := &contextStringCallback{
-		cb: c,
+		cb:   c,
 		data: d,
 	}
 
@@ -269,7 +269,7 @@ func GetCdRomDirsCallback(c StringCallback, d interface{}) {
 // Call c for each entry in the SearchPath, passing it d and the dir.
 func GetSearchPathCallback(c StringCallback, d interface{}) {
 	csc := &contextStringCallback{
-		cb: c,
+		cb:   c,
 		data: d,
 	}
 
@@ -282,7 +282,7 @@ func EnumerateFilesCallback(dir string, c EnumFilesCallback, d interface{}) {
 	defer C.free(unsafe.Pointer(cdir))
 
 	cefc := &contextEnumFilesCallback{
-		cb: c,
+		cb:   c,
 		data: d,
 	}
 
@@ -329,7 +329,7 @@ func PermitSymbolicLinks(set bool) {
 }
 
 // Return whether or not following of symbolic links is currently enabled.
-func SymbolicLinksPermitted() (bool) {
+func SymbolicLinksPermitted() bool {
 	if int(C.PHYSFS_symbolicLinksPermitted()) != 0 {
 		return true
 	}
@@ -339,7 +339,7 @@ func SymbolicLinksPermitted() (bool) {
 
 // Returns true if the named path exists and is a symbolic link, otherwise
 // returns false.
-func IsSymbolicLink(n string) (bool) {
+func IsSymbolicLink(n string) bool {
 	cn := C.CString(n)
 	defer C.free(unsafe.Pointer(cn))
 	if int(C.PHYSFS_isSymbolicLink(cn)) != 0 {
@@ -396,7 +396,7 @@ func EnumerateFiles(dir string) (list []string, err os.Error) {
 
 // Returns a boolean indicating whether or not the specified file/directory
 // exists.
-func Exists(n string) (bool) {
+func Exists(n string) bool {
 	cn := C.CString(n)
 	defer C.free(unsafe.Pointer(cn))
 	if int(C.PHYSFS_exists(cn)) != 0 {
@@ -408,7 +408,7 @@ func Exists(n string) (bool) {
 
 // Deletes the specified file or directory. Only deletes empty directories.
 // Returns an error, if any.
-func Delete(n string) (os.Error) {
+func Delete(n string) os.Error {
 	cn := C.CString(n)
 	defer C.free(unsafe.Pointer(cn))
 	if int(C.PHYSFS_delete(cn)) != 0 {
@@ -427,7 +427,7 @@ func DeleteRecurse(dir string) (err os.Error) {
 		if err != nil {
 			return err
 		}
-		for _, i := range(files) {
+		for _, i := range files {
 			diri := path.Join(dir, i)
 			if IsDirectory(diri) {
 				err = DeleteRecurse(diri)
@@ -452,7 +452,7 @@ func DeleteRecurse(dir string) (err os.Error) {
 }
 
 // Returns true if dir exists and is a directory. Otherwise, returns false.
-func IsDirectory(dir string) (bool) {
+func IsDirectory(dir string) bool {
 	cdir := C.CString(dir)
 	defer C.free(unsafe.Pointer(cdir))
 	if int(C.PHYSFS_isDirectory(cdir)) != 0 {
@@ -464,7 +464,7 @@ func IsDirectory(dir string) (bool) {
 
 // Creates the specified directory inside the write path. Will create any parent
 // directories that don't exist. Returns an error, if any.
-func Mkdir(dir string) (os.Error) {
+func Mkdir(dir string) os.Error {
 	cdir := C.CString(dir)
 	defer C.free(unsafe.Pointer(cdir))
 	if int(C.PHYSFS_mkdir(cdir)) != 0 {
@@ -481,7 +481,7 @@ func Mkdir(dir string) (os.Error) {
 // mount-point, you may not mount the same archive/directory in multiple
 // locations. Attempting to do so will simply do nothing without returning an
 // error. Returns an error, if any.
-func Mount(dir, mp string, app bool) (os.Error) {
+func Mount(dir, mp string, app bool) os.Error {
 	a := 0
 	if app {
 		a = 1
@@ -515,7 +515,7 @@ func GetMountPoint(dir string) (string, os.Error) {
 
 // A legacy function that is now equivalent to
 //		physfs.Mount(dir, "", app)
-func AddToSearchPath(dir string, app bool) (os.Error) {
+func AddToSearchPath(dir string, app bool) os.Error {
 	a := 0
 	if app {
 		a = 1
@@ -534,7 +534,7 @@ func AddToSearchPath(dir string, app bool) (os.Error) {
 // Remove the specified archive/directory from search path. This will fail if
 // there any files inside the archive/directory that are still open. Returns an
 // error, if any.
-func RemoveFromSearchPath(dir string) (os.Error) {
+func RemoveFromSearchPath(dir string) os.Error {
 	cdir := C.CString(dir)
 	defer C.free(unsafe.Pointer(cdir))
 	if int(C.PHYSFS_removeFromSearchPath(cdir)) != 0 {
@@ -554,12 +554,12 @@ func GetLastModTime(n string, zone int) (t *time.Time, err os.Error) {
 	if num != -1 {
 		err = nil
 		switch zone {
-			case T_LOCAL:
-				t = time.SecondsToLocalTime(num)
-			case T_UTC:
-				t = time.SecondsToUTC(num)
-			default:
-				err = os.NewError("Unknown zone.")
+		case T_LOCAL:
+			t = time.SecondsToLocalTime(num)
+		case T_UTC:
+			t = time.SecondsToUTC(num)
+		default:
+			err = os.NewError("Unknown zone.")
 		}
 
 		return t, err

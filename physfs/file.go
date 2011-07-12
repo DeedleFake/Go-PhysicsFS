@@ -1,6 +1,6 @@
 package physfs
 
-import(
+import (
 	"os"
 	"fmt"
 	"http"
@@ -44,14 +44,14 @@ func openFile(name string, flag int) (f *File, err os.Error) {
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 	switch flag {
-		case os.O_RDONLY:
-			f = (*File)(C.PHYSFS_openRead(cname))
-		case os.O_WRONLY:
-			f = (*File)(C.PHYSFS_openWrite(cname))
-		case os.O_APPEND:
-			f = (*File)(C.PHYSFS_openAppend(cname))
-		default:
-			return nil, os.NewError("Unknown flag.")
+	case os.O_RDONLY:
+		f = (*File)(C.PHYSFS_openRead(cname))
+	case os.O_WRONLY:
+		f = (*File)(C.PHYSFS_openWrite(cname))
+	case os.O_APPEND:
+		f = (*File)(C.PHYSFS_openAppend(cname))
+	default:
+		return nil, os.NewError("Unknown flag.")
 	}
 
 	if f == nil {
@@ -62,7 +62,7 @@ func openFile(name string, flag int) (f *File, err os.Error) {
 }
 
 // Close the file, release related resources. Returns an error, if any.
-func (f *File)Close() (os.Error) {
+func (f *File) Close() os.Error {
 	if int(C.PHYSFS_close((*C.PHYSFS_File)(f))) != 0 {
 		return nil
 	}
@@ -72,7 +72,7 @@ func (f *File)Close() (os.Error) {
 
 // Read up to len(buf) bytes from the file into buf. Returns the number of bytes
 // read and an error, if any.
-func (f *File)Read(buf []byte) (n int, err os.Error) {
+func (f *File) Read(buf []byte) (n int, err os.Error) {
 	n = int(C.PHYSFS_read((*C.PHYSFS_File)(f), unsafe.Pointer(&buf[0]), 1, C.PHYSFS_uint32(len(buf))))
 
 	if n == -1 {
@@ -88,7 +88,7 @@ func (f *File)Read(buf []byte) (n int, err os.Error) {
 
 // Write the bytes in buf to the file. Returns the number of bytes written and
 // an error, if any.
-func (f *File)Write(buf []byte) (n int, err os.Error) {
+func (f *File) Write(buf []byte) (n int, err os.Error) {
 	n = int(C.PHYSFS_write((*C.PHYSFS_File)(f), unsafe.Pointer(&buf[0]), 1, C.PHYSFS_uint32(len(buf))))
 
 	if n == -1 {
@@ -100,7 +100,7 @@ func (f *File)Write(buf []byte) (n int, err os.Error) {
 
 // Returns a boolean indicating whether or not the end of the file has been
 // reached.
-func (f *File)EOF() (bool) {
+func (f *File) EOF() bool {
 	if int(C.PHYSFS_eof((*C.PHYSFS_File)(f))) != 0 {
 		return true
 	}
@@ -110,7 +110,7 @@ func (f *File)EOF() (bool) {
 
 // Returns a number indication the current position in the file, and an error,
 // if any.
-func (f *File)Tell() (int64, os.Error) {
+func (f *File) Tell() (int64, os.Error) {
 	r := int64(C.PHYSFS_tell((*C.PHYSFS_File)(f)))
 	if r == -1 {
 		return r, os.NewError(GetLastError())
@@ -124,25 +124,25 @@ func (f *File)Tell() (int64, os.Error) {
 // relative to the current offset; if whence is 2 it's relative to the end of
 // the file. Any other value will result in an error. Returns the new offset
 // and an error, if any.
-func (f *File)Seek(offset int64, whence int) (int64, os.Error) {
+func (f *File) Seek(offset int64, whence int) (int64, os.Error) {
 	newoff := offset
 	switch whence {
-		case 0:
-			break
-		case 1:
-			cp, err := f.Tell()
-			if err != nil {
-				return newoff + cp, err
-			}
-			newoff += cp
-		case 2:
-			eof, err := f.Length()
-			if err != nil {
-				return eof + newoff, err
-			}
-			newoff += eof
-		default:
-			return newoff, os.NewError(fmt.Sprintf("Unknown value for whence: %v", whence))
+	case 0:
+		break
+	case 1:
+		cp, err := f.Tell()
+		if err != nil {
+			return newoff + cp, err
+		}
+		newoff += cp
+	case 2:
+		eof, err := f.Length()
+		if err != nil {
+			return eof + newoff, err
+		}
+		newoff += eof
+	default:
+		return newoff, os.NewError(fmt.Sprintf("Unknown value for whence: %v", whence))
 	}
 
 	r := int64(C.PHYSFS_seek((*C.PHYSFS_File)(f), C.PHYSFS_uint64(newoff)))
@@ -155,7 +155,7 @@ func (f *File)Seek(offset int64, whence int) (int64, os.Error) {
 }
 
 // Returns the total length of the file and an error, if any.
-func (f *File)Length() (int64, os.Error) {
+func (f *File) Length() (int64, os.Error) {
 	r := int64(C.PHYSFS_fileLength((*C.PHYSFS_File)(f)))
 
 	if r == -1 {
@@ -185,7 +185,7 @@ func (f *File)Length() (int64, os.Error) {
 // Failures can include not being able to seek backwards in a read-only file
 // when removing the buffer, not being able to allocate the buffer, and not
 // being able to flush the buffer to disk, among other unexpected problems.
-func (f *File)SetBuffer(size uint64) (os.Error) {
+func (f *File) SetBuffer(size uint64) os.Error {
 	if int(C.PHYSFS_setBuffer((*C.PHYSFS_File)(f), C.PHYSFS_uint64(size))) != 0 {
 		return nil
 	}
@@ -195,7 +195,7 @@ func (f *File)SetBuffer(size uint64) (os.Error) {
 
 // Flush the buffer of a buffered file. If the file was only opened for reading
 // or is unbuffered this will do nothing successfully. Returns an error, if any.
-func (f *File)Flush() (os.Error) {
+func (f *File) Flush() os.Error {
 	if int(C.PHYSFS_flush((*C.PHYSFS_File)(f))) != 0 {
 		return nil
 	}
@@ -204,14 +204,14 @@ func (f *File)Flush() (os.Error) {
 }
 
 // A synonym for File.Flush(). Exactly the same.
-func (f *File)Sync() (os.Error) {
+func (f *File) Sync() os.Error {
 	return f.Flush()
 }
 
 // TODO: Add File.Stat() and File.Readdir() in order to make File satisfy
 // http.File.
 
-type fileSystem struct {}
+type fileSystem struct{}
 
 // Returns a simple implementation of http.FileSystem that simply opens the
 // specified PhysicsFS file.
@@ -220,6 +220,6 @@ type fileSystem struct {}
 //	return new(fileSystem)
 //}
 
-func (fs *fileSystem)Open(name string) (http.File, os.Error) {
+func (fs *fileSystem) Open(name string) (http.File, os.Error) {
 	return Open(name)
 }
