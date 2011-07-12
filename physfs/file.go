@@ -211,7 +211,7 @@ func (f *File) Sync() os.Error {
 // TODO: Add File.Stat() and File.Readdir() in order to make File satisfy
 // http.File.
 
-type fileSystem struct{}
+//type fileSystem struct{}
 
 // Returns a simple implementation of http.FileSystem that simply opens the
 // specified PhysicsFS file.
@@ -220,6 +220,6 @@ type fileSystem struct{}
 //	return new(fileSystem)
 //}
 
-func (fs *fileSystem) Open(name string) (http.File, os.Error) {
-	return Open(name)
-}
+//func (fs *fileSystem) Open(name string) (http.File, os.Error) {
+//	return Open(name)
+//}
