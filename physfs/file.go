@@ -3,6 +3,7 @@ package physfs
 import(
 	"os"
 	"fmt"
+	"http"
 	"unsafe"
 )
 
@@ -205,4 +206,20 @@ func (f *File)Flush() (os.Error) {
 // A synonym for File.Flush(). Exactly the same.
 func (f *File)Sync() (os.Error) {
 	return f.Flush()
+}
+
+// TODO: Add File.Stat() and File.Readdir() in order to make File satisfy
+// http.File.
+
+type fileSystem struct {}
+
+// Returns a simple implementation of http.FileSystem that simply opens the
+// specified PhysicsFS file.
+// Currently pointless due the fact the File doesn't satisfy http.File.
+//func FileSystem() http.FileSystem {
+//	return new(fileSystem)
+//}
+
+func (fs *fileSystem)Open(name string) (http.File, os.Error) {
+	return Open(name)
 }
