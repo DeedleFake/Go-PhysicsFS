@@ -4,14 +4,8 @@ SRCDIR:=physfs
 
 .PHONY: all install test clean fmt
 
-all:
+all test clean fmt:
 	$(MAKE) -C $(SRCDIR) $@
 
 install install.clean: all
-	$(MAKE) -C $(SRCDIR) $@
-
-test clean:
-	$(MAKE) -C $(SRCDIR) $@
-
-fmt:
 	$(MAKE) -C $(SRCDIR) $@

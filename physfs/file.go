@@ -3,7 +3,6 @@ package physfs
 import (
 	"os"
 	"fmt"
-	"http"
 	"unsafe"
 )
 
