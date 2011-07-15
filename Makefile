@@ -2,7 +2,7 @@ MAKE=gomake
 
 SRCDIR:=physfs
 
-.PHONY: all install test clean fmt
+.PHONY: all install clean install.clean test fmt
 
 all test clean fmt:
 	$(MAKE) -C $(SRCDIR) $@
