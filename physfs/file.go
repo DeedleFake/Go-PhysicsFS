@@ -302,7 +302,7 @@ func (f *File) Readdir(count int) ([]os.FileInfo, os.Error) {
 	if count < 0 {
 		count = len(files)
 	}
-	if len(files) - f.read < count {
+	if len(files)-f.read < count {
 		count = len(files) - f.read
 	}
 

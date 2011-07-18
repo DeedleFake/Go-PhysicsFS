@@ -1,6 +1,6 @@
 package physfs
 
-import(
+import (
 	"fmt"
 	"testing"
 )
@@ -15,7 +15,7 @@ func TestSupportedArchiveTypes(t *testing.T) {
 
 	sat := SupportedArchiveTypes()
 	fmt.Printf("SupportedArchiveTypes: %v:\n", len(sat))
-	for i := range(sat) {
+	for i := range sat {
 		fmt.Printf("\t%v: %v\n", i+1, sat[i])
 	}
 

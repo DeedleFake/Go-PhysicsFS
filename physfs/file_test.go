@@ -1,6 +1,6 @@
 package physfs
 
-import(
+import (
 	"os"
 	"fmt"
 	"testing"
@@ -78,7 +78,7 @@ func TestFile(t *testing.T) {
 		t.Fatalf("Error: %v\n", err)
 	}
 	fmt.Println("Readdir() Test:")
-	for i := range(fi) {
+	for i := range fi {
 		fmt.Printf("\t%v\n", fi[i].Name)
 	}
 

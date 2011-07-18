@@ -19,4 +19,4 @@ doc:
 	godoc -html -path=. . > doc.html
 
 fmt:
-	gofmt -w $(CGOFILES)
+	gofmt -w $(CGOFILES) $(wildcard *_test.go)
