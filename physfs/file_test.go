@@ -2,6 +2,7 @@ package physfs
 
 import(
 	"os"
+	"io"
 	"fmt"
 	"testing"
 )
@@ -67,6 +68,13 @@ func TestFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error: %v\n", err.String())
 	}
+
+	dir, err := Open("/")
+	if err != nil {
+		t.Fatalf("Error: %v\n", err)
+	}
+	defer dir.Close()
+	io.Copy(os.Stdout, dir)
 
 	err = Deinit()
 	if err != nil {

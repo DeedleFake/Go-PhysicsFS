@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"http"
 	"unsafe"
+	"syscall"
 )
 
 // #include <stdlib.h>
@@ -45,6 +46,13 @@ func Open(name string) (file *File, err os.Error) {
 // relative to the current write directory. Returns the file and an error, if
 // any.
 func openFile(name string, flag int) (f *File, err os.Error) {
+	if IsDirectory(name) {
+		return &File{
+			nil,
+			name,
+		}, nil
+	}
+
 	cname := C.CString(name)
 	defer C.free(unsafe.Pointer(cname))
 	switch flag {
@@ -58,15 +66,23 @@ func openFile(name string, flag int) (f *File, err os.Error) {
 		return nil, os.NewError("Unknown flag.")
 	}
 
-	if f == nil {
-		return f, os.NewError(GetLastError())
+	if f.cfile == nil {
+		return nil, os.NewError(GetLastError())
 	}
 
-	return f, nil
+	return
+}
+
+func (f *File)isdir() bool {
+	return IsDirectory(f.name)
 }
 
 // Close the file, release related resources. Returns an error, if any.
 func (f *File) Close() os.Error {
+	if f.isdir() {
+		return nil
+	}
+
 	if int(C.PHYSFS_close(f.cfile)) != 0 {
 		return nil
 	}
@@ -77,6 +93,10 @@ func (f *File) Close() os.Error {
 // Read up to len(buf) bytes from the file into buf. Returns the number of bytes
 // read and an error, if any.
 func (f *File) Read(buf []byte) (n int, err os.Error) {
+	if f.isdir() {
+		return 0, os.EISDIR
+	}
+
 	n = int(C.PHYSFS_read(f.cfile, unsafe.Pointer(&buf[0]), 1, C.PHYSFS_uint32(len(buf))))
 
 	if n == -1 {
@@ -93,6 +113,10 @@ func (f *File) Read(buf []byte) (n int, err os.Error) {
 // Write the bytes in buf to the file. Returns the number of bytes written and
 // an error, if any.
 func (f *File) Write(buf []byte) (n int, err os.Error) {
+	if f.isdir() {
+		return 0, os.EISDIR
+	}
+
 	n = int(C.PHYSFS_write(f.cfile, unsafe.Pointer(&buf[0]), 1, C.PHYSFS_uint32(len(buf))))
 
 	if n == -1 {
@@ -105,6 +129,10 @@ func (f *File) Write(buf []byte) (n int, err os.Error) {
 // Returns a boolean indicating whether or not the end of the file has been
 // reached.
 func (f *File) EOF() bool {
+	if f.isdir() {
+		return true
+	}
+
 	if int(C.PHYSFS_eof(f.cfile)) != 0 {
 		return true
 	}
@@ -115,6 +143,10 @@ func (f *File) EOF() bool {
 // Returns a number indication the current position in the file, and an error,
 // if any.
 func (f *File) Tell() (int64, os.Error) {
+	if f.isdir() {
+		return 0, os.EISDIR
+	}
+
 	r := int64(C.PHYSFS_tell(f.cfile))
 	if r == -1 {
 		return r, os.NewError(GetLastError())
@@ -129,6 +161,10 @@ func (f *File) Tell() (int64, os.Error) {
 // the file. Any other value will result in an error. Returns the new offset
 // and an error, if any.
 func (f *File) Seek(offset int64, whence int) (int64, os.Error) {
+	if f.isdir() {
+		return 0, os.EISDIR
+	}
+
 	newoff := offset
 	switch whence {
 	case 0:
@@ -160,6 +196,10 @@ func (f *File) Seek(offset int64, whence int) (int64, os.Error) {
 
 // Returns the total length of the file and an error, if any.
 func (f *File) Length() (int64, os.Error) {
+	if f.isdir() {
+		return 0, os.EISDIR
+	}
+
 	r := int64(C.PHYSFS_fileLength(f.cfile))
 
 	if r == -1 {
@@ -190,6 +230,10 @@ func (f *File) Length() (int64, os.Error) {
 // when removing the buffer, not being able to allocate the buffer, and not
 // being able to flush the buffer to disk, among other unexpected problems.
 func (f *File) SetBuffer(size uint64) os.Error {
+	if f.isdir() {
+		return os.EISDIR
+	}
+
 	if int(C.PHYSFS_setBuffer(f.cfile, C.PHYSFS_uint64(size))) != 0 {
 		return nil
 	}
@@ -200,6 +244,10 @@ func (f *File) SetBuffer(size uint64) os.Error {
 // Flush the buffer of a buffered file. If the file was only opened for reading
 // or is unbuffered this will do nothing successfully. Returns an error, if any.
 func (f *File) Flush() os.Error {
+	if f.isdir() {
+		return os.EISDIR
+	}
+
 	if int(C.PHYSFS_flush(f.cfile)) != 0 {
 		return nil
 	}
@@ -214,28 +262,60 @@ func (f *File) Sync() os.Error {
 
 // TODO: Make File.Stat() and File.Readdir() actually work correctly.
 
-func (f *File) Stat() (*os.FileInfo, os.Error) {
+func (f *File) Stat() (fi *os.FileInfo, err os.Error) {
+	if f.isdir() {
+		return &os.FileInfo{
+			Mode: 0444 | syscall.S_IFMT | syscall.S_IFDIR,
+			Name: f.name,
+		}, nil
+	}
+
 	size, err := f.Length()
+	if err != nil {
+		return
+	}
+
+	return &os.FileInfo{
+		Mode: 0444 | syscall.S_IFMT | syscall.S_IFREG,
+		Size: size,
+		Name: f.name,
+	}, nil
+
+	return
+}
+
+func (f *File) Readdir(count int) ([]os.FileInfo, os.Error) {
+	if !f.isdir() {
+		return nil, os.ENOTDIR
+	}
+
+	files, err := EnumerateFiles(f.name)
 	if err != nil {
 		return nil, err
 	}
 
-	return &os.FileInfo{
-		Mode: 0444,
-		Size: size,
-		Name: f.name,
-	}, nil
-}
+	fi := make([]os.FileInfo, 0, len(files))
+	for i := range(files) {
+		file, err := Open(f.name + "/" + files[i])
+		if err != nil {
+			return nil, err
+		}
+		info, err := file.Stat()
+		if err != nil {
+			return nil, err
+		}
+		fi = append(fi, *info)
+		file.Close()
+	}
 
-func (f *File) Readdir(count int) ([]os.FileInfo, os.Error) {
-	return nil, os.NewError("Directories are not supported")
+	return fi, nil
 }
 
 type fileSystem struct{}
 
 // Returns a simple implementation of http.FileSystem that simply opens the
 // specified PhysicsFS file.
-// Currently pointless due the fact the File doesn't satisfy http.File.
+// Currently pointless due to the fact the File doesn't satisfy http.File.
 func FileSystem() http.FileSystem {
 	return new(fileSystem)
 }
