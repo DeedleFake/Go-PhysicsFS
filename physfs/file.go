@@ -73,7 +73,7 @@ func openFile(name string, flag int) (f *File, err os.Error) {
 	return
 }
 
-func (f *File)isdir() bool {
+func (f *File) isdir() bool {
 	return IsDirectory(f.name)
 }
 
@@ -295,7 +295,7 @@ func (f *File) Readdir(count int) ([]os.FileInfo, os.Error) {
 	}
 
 	fi := make([]os.FileInfo, 0, len(files))
-	for i := range(files) {
+	for i := range files {
 		file, err := Open(f.name + "/" + files[i])
 		if err != nil {
 			return nil, err
