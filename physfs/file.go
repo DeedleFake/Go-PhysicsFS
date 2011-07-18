@@ -18,6 +18,7 @@ type File struct {
 	cfile *C.PHYSFS_File
 
 	name string
+	read int
 }
 
 // Open the named file, relative to the current write dir, for writing. The
@@ -50,6 +51,7 @@ func openFile(name string, flag int) (f *File, err os.Error) {
 		return &File{
 			nil,
 			name,
+			0,
 		}, nil
 	}
 
@@ -57,11 +59,11 @@ func openFile(name string, flag int) (f *File, err os.Error) {
 	defer C.free(unsafe.Pointer(cname))
 	switch flag {
 	case os.O_RDONLY:
-		f = &File{C.PHYSFS_openRead(cname), name}
+		f = &File{C.PHYSFS_openRead(cname), name, -1}
 	case os.O_WRONLY:
-		f = &File{C.PHYSFS_openWrite(cname), name}
+		f = &File{C.PHYSFS_openWrite(cname), name, -1}
 	case os.O_APPEND:
-		f = &File{C.PHYSFS_openAppend(cname), name}
+		f = &File{C.PHYSFS_openAppend(cname), name, -1}
 	default:
 		return nil, os.NewError("Unknown flag.")
 	}
@@ -288,13 +290,23 @@ func (f *File) Readdir(count int) ([]os.FileInfo, os.Error) {
 	if !f.isdir() {
 		return nil, os.ENOTDIR
 	}
+	if f.read < 0 {
+		return nil, os.EINVAL
+	}
 
 	files, err := EnumerateFiles(f.name)
 	if err != nil {
 		return nil, err
 	}
 
-	fi := make([]os.FileInfo, 0, len(files))
+	if count < 0 {
+		count = len(files)
+	}
+	if len(files) - f.read < count {
+		count = len(files) - f.read
+	}
+
+	fi := make([]os.FileInfo, 0, count)
 	for i := range files {
 		file, err := Open(f.name + "/" + files[i])
 		if err != nil {
@@ -307,6 +319,8 @@ func (f *File) Readdir(count int) ([]os.FileInfo, os.Error) {
 		fi = append(fi, *info)
 		file.Close()
 	}
+
+	f.read += count
 
 	return fi, nil
 }

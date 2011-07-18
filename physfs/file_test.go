@@ -2,7 +2,6 @@ package physfs
 
 import(
 	"os"
-	"io"
 	"fmt"
 	"testing"
 )
@@ -74,7 +73,14 @@ func TestFile(t *testing.T) {
 		t.Fatalf("Error: %v\n", err)
 	}
 	defer dir.Close()
-	io.Copy(os.Stdout, dir)
+	fi, err := dir.Readdir(-1)
+	if err != nil {
+		t.Fatalf("Error: %v\n", err)
+	}
+	fmt.Println("Readdir() Test:")
+	for i := range(fi) {
+		fmt.Printf("\t%v\n", fi[i].Name)
+	}
 
 	err = Deinit()
 	if err != nil {
