@@ -1,6 +1,6 @@
 include $(GOROOT)/src/Make.inc
 
-TARG=physfs
+TARG=github.com/DeedleFake/Go-PhysicsFS/physfs
 CGOFILES=\
          physfs.go\
          file.go\
