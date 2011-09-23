@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 	"http"
-	"physfs"
+	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 )
 
 func main() {

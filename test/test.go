@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 	"fmt"
-	"physfs"
+	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 )
 
 func main() {
