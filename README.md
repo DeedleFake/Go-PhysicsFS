@@ -14,9 +14,17 @@ Installation
 
 To install simply type:
 
+> goinstall github.com/DeedleFake/Go-PhysicsFS/physfs
+
+If you don't have write permission for GOPATH/GOROOT, you may need to run the previous command as root. If you get errors while trying to run it using sudo, it's possible that the GOROOT/GOOS/GOARCH/GOBIN variables are not available to the make command. You can try using '-E' to preserve the environment:
+
+> sudo -E goinstall github.com/DeedleFake/Go-PhysicsFS/physfs
+
+It's also possible to install just using make:
+
 > make install
 
-If you don't have write permission for GOROOT, you may need to run the previous command as root. If you get errors while trying to run it using sudo, it's possible that the GOROOT/GOOS/GOARCH/GOBIN variables are not available to the make command. You can try using '-E' to preserve the environment:
+or
 
 > sudo -E make install
 
