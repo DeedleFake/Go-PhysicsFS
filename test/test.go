@@ -15,7 +15,7 @@ func main() {
 
 	err = physfs.SetSaneConfig("test-go-physfs", "", "aoi", false, false)
 	if err != nil {
-		fmt.Printf("Error: %v\n", err.String())
+		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
 	}
 
