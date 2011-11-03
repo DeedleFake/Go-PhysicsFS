@@ -2,8 +2,10 @@ package physfs
 
 import (
 	"os"
+	"io"
 	"fmt"
 	"http"
+	"errors"
 	"unsafe"
 	"syscall"
 )
@@ -24,7 +26,7 @@ type File struct {
 // Open the named file, relative to the current write dir, for writing. The
 // specified file is created if it doesn't exist. If it does exist it is
 // truncated to zero bytes. Returns the file and an error, if any.
-func Create(name string) (file *File, err os.Error) {
+func Create(name string) (file *File, err error) {
 	return openFile(name, os.O_WRONLY)
 }
 
@@ -32,13 +34,13 @@ func Create(name string) (file *File, err os.Error) {
 // specified file is created if it doesn't exist. If it does exist, the writing
 // offset is set to the end of the file so that writes will append to the file.
 // Returns the file and an error, if any.
-func Append(name string) (file *File, err os.Error) {
+func Append(name string) (file *File, err error) {
 	return openFile(name, os.O_APPEND)
 }
 
 // Open the named file from the search path for reading. Returns the file and an
 // error, if any.
-func Open(name string) (file *File, err os.Error) {
+func Open(name string) (file *File, err error) {
 	return openFile(name, os.O_RDONLY)
 }
 
@@ -46,7 +48,7 @@ func Open(name string) (file *File, err os.Error) {
 // opened from the search-path, and write-only and append-only files are opened
 // relative to the current write directory. Returns the file and an error, if
 // any.
-func openFile(name string, flag int) (f *File, err os.Error) {
+func openFile(name string, flag int) (f *File, err error) {
 	if IsDirectory(name) {
 		return &File{
 			nil,
@@ -65,11 +67,11 @@ func openFile(name string, flag int) (f *File, err os.Error) {
 	case os.O_APPEND:
 		f = &File{C.PHYSFS_openAppend(cname), name, -1}
 	default:
-		return nil, os.NewError("Unknown flag.")
+		return nil, errors.New("Unknown flag.")
 	}
 
 	if f.cfile == nil {
-		return nil, os.NewError(GetLastError())
+		return nil, errors.New(GetLastError())
 	}
 
 	return
@@ -80,7 +82,7 @@ func (f *File) isdir() bool {
 }
 
 // Close the file, release related resources. Returns an error, if any.
-func (f *File) Close() os.Error {
+func (f *File) Close() error {
 	if f.isdir() {
 		return nil
 	}
@@ -89,12 +91,12 @@ func (f *File) Close() os.Error {
 		return nil
 	}
 
-	return os.NewError(GetLastError())
+	return errors.New(GetLastError())
 }
 
 // Read up to len(buf) bytes from the file into buf. Returns the number of bytes
 // read and an error, if any.
-func (f *File) Read(buf []byte) (n int, err os.Error) {
+func (f *File) Read(buf []byte) (n int, err error) {
 	if f.isdir() {
 		return 0, os.EISDIR
 	}
@@ -102,11 +104,11 @@ func (f *File) Read(buf []byte) (n int, err os.Error) {
 	n = int(C.PHYSFS_read(f.cfile, unsafe.Pointer(&buf[0]), 1, C.PHYSFS_uint32(len(buf))))
 
 	if n == -1 {
-		err = os.NewError(GetLastError())
+		err = errors.New(GetLastError())
 	}
 
 	if f.EOF() {
-		err = os.EOF
+		err = io.EOF
 	}
 
 	return n, err
@@ -114,7 +116,7 @@ func (f *File) Read(buf []byte) (n int, err os.Error) {
 
 // Write the bytes in buf to the file. Returns the number of bytes written and
 // an error, if any.
-func (f *File) Write(buf []byte) (n int, err os.Error) {
+func (f *File) Write(buf []byte) (n int, err error) {
 	if f.isdir() {
 		return 0, os.EISDIR
 	}
@@ -122,7 +124,7 @@ func (f *File) Write(buf []byte) (n int, err os.Error) {
 	n = int(C.PHYSFS_write(f.cfile, unsafe.Pointer(&buf[0]), 1, C.PHYSFS_uint32(len(buf))))
 
 	if n == -1 {
-		return n, os.NewError(GetLastError())
+		return n, errors.New(GetLastError())
 	}
 
 	return n, nil
@@ -144,14 +146,14 @@ func (f *File) EOF() bool {
 
 // Returns a number indication the current position in the file, and an error,
 // if any.
-func (f *File) Tell() (int64, os.Error) {
+func (f *File) Tell() (int64, error) {
 	if f.isdir() {
 		return 0, os.EISDIR
 	}
 
 	r := int64(C.PHYSFS_tell(f.cfile))
 	if r == -1 {
-		return r, os.NewError(GetLastError())
+		return r, errors.New(GetLastError())
 	}
 
 	return r, nil
@@ -162,7 +164,7 @@ func (f *File) Tell() (int64, os.Error) {
 // relative to the current offset; if whence is 2 it's relative to the end of
 // the file. Any other value will result in an error. Returns the new offset
 // and an error, if any.
-func (f *File) Seek(offset int64, whence int) (int64, os.Error) {
+func (f *File) Seek(offset int64, whence int) (int64, error) {
 	if f.isdir() {
 		return 0, os.EISDIR
 	}
@@ -184,20 +186,20 @@ func (f *File) Seek(offset int64, whence int) (int64, os.Error) {
 		}
 		newoff += eof
 	default:
-		return newoff, os.NewError(fmt.Sprintf("Unknown value for whence: %v", whence))
+		return newoff, errors.New(fmt.Sprintf("Unknown value for whence: %v", whence))
 	}
 
 	r := int64(C.PHYSFS_seek(f.cfile, C.PHYSFS_uint64(newoff)))
 
 	if r == 0 {
-		return newoff, os.NewError(GetLastError())
+		return newoff, errors.New(GetLastError())
 	}
 
 	return newoff, nil
 }
 
 // Returns the total length of the file and an error, if any.
-func (f *File) Length() (int64, os.Error) {
+func (f *File) Length() (int64, error) {
 	if f.isdir() {
 		return 0, os.EISDIR
 	}
@@ -205,7 +207,7 @@ func (f *File) Length() (int64, os.Error) {
 	r := int64(C.PHYSFS_fileLength(f.cfile))
 
 	if r == -1 {
-		return r, os.NewError(GetLastError())
+		return r, errors.New(GetLastError())
 	}
 
 	return r, nil
@@ -231,7 +233,7 @@ func (f *File) Length() (int64, os.Error) {
 // Failures can include not being able to seek backwards in a read-only file
 // when removing the buffer, not being able to allocate the buffer, and not
 // being able to flush the buffer to disk, among other unexpected problems.
-func (f *File) SetBuffer(size uint64) os.Error {
+func (f *File) SetBuffer(size uint64) error {
 	if f.isdir() {
 		return os.EISDIR
 	}
@@ -240,12 +242,12 @@ func (f *File) SetBuffer(size uint64) os.Error {
 		return nil
 	}
 
-	return os.NewError(GetLastError())
+	return errors.New(GetLastError())
 }
 
 // Flush the buffer of a buffered file. If the file was only opened for reading
 // or is unbuffered this will do nothing successfully. Returns an error, if any.
-func (f *File) Flush() os.Error {
+func (f *File) Flush() error {
 	if f.isdir() {
 		return os.EISDIR
 	}
@@ -254,17 +256,17 @@ func (f *File) Flush() os.Error {
 		return nil
 	}
 
-	return os.NewError(GetLastError())
+	return errors.New(GetLastError())
 }
 
 // A synonym for File.Flush(). Exactly the same.
-func (f *File) Sync() os.Error {
+func (f *File) Sync() error {
 	return f.Flush()
 }
 
 // TODO: Make File.Stat() and File.Readdir() actually work correctly.
 
-func (f *File) Stat() (fi *os.FileInfo, err os.Error) {
+func (f *File) Stat() (fi *os.FileInfo, err error) {
 	if f.isdir() {
 		return &os.FileInfo{
 			Mode: 0444 | syscall.S_IFMT | syscall.S_IFDIR,
@@ -286,7 +288,7 @@ func (f *File) Stat() (fi *os.FileInfo, err os.Error) {
 	return
 }
 
-func (f *File) Readdir(count int) ([]os.FileInfo, os.Error) {
+func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 	if !f.isdir() {
 		return nil, os.ENOTDIR
 	}
@@ -334,6 +336,6 @@ func FileSystem() http.FileSystem {
 	return new(fileSystem)
 }
 
-func (fs *fileSystem) Open(name string) (http.File, os.Error) {
+func (fs *fileSystem) Open(name string) (http.File, error) {
 	return Open(name)
 }
