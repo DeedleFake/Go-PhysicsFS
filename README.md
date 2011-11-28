@@ -31,9 +31,9 @@ or
 Usage:
 ------
 
-To import, simply use the following:
+To import, use the following:
 
-    import "physfs"
+    import "github.com/DeedleFake/Go-PhysicsFS/physfs"
 
 Authors
 -------
