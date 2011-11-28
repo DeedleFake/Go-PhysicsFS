@@ -4,10 +4,10 @@ import (
 	"os"
 	"io"
 	"fmt"
-	"http"
 	"errors"
 	"unsafe"
 	"syscall"
+	"net/http"
 )
 
 // #include <stdlib.h>
