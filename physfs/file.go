@@ -1,13 +1,13 @@
 package physfs
 
 import (
-	"os"
-	"io"
-	"fmt"
 	"errors"
-	"unsafe"
-	"syscall"
+	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"syscall"
+	"unsafe"
 )
 
 // #include <stdlib.h>

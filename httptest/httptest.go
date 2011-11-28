@@ -1,9 +1,9 @@
 package main
 
 import (
+	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 	"log"
 	"net/http"
-	"github.com/DeedleFake/Go-PhysicsFS/physfs"
 )
 
 func main() {

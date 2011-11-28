@@ -3,10 +3,10 @@
 package physfs
 
 import (
+	"errors"
 	"os"
 	"path"
 	"time"
-	"errors"
 	"unsafe"
 )
 

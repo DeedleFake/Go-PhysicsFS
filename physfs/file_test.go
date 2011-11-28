@@ -1,8 +1,8 @@
 package physfs
 
 import (
-	"os"
 	"fmt"
+	"os"
 	"testing"
 )
 

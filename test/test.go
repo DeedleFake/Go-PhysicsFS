@@ -1,9 +1,9 @@
 package main
 
 import (
-	"os"
 	"fmt"
 	"github.com/DeedleFake/Go-PhysicsFS/physfs"
+	"os"
 )
 
 func main() {
