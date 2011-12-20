@@ -6,8 +6,8 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"unsafe"
 	"time"
+	"unsafe"
 )
 
 // #include <stdlib.h>
@@ -322,15 +322,15 @@ type fileInfo struct {
 	size int64
 }
 
-func (fi fileInfo)Name() string {
+func (fi fileInfo) Name() string {
 	return fi.name
 }
 
-func (fi fileInfo)Size() int64 {
+func (fi fileInfo) Size() int64 {
 	return fi.size
 }
 
-func (fi fileInfo)Mode() os.FileMode {
+func (fi fileInfo) Mode() os.FileMode {
 	if fi.IsDir() {
 		return os.ModeDir
 	}
@@ -338,7 +338,7 @@ func (fi fileInfo)Mode() os.FileMode {
 	return 0644
 }
 
-func (fi fileInfo)ModTime() time.Time {
+func (fi fileInfo) ModTime() time.Time {
 	mt, err := GetLastModTime(fi.name)
 	if err != nil {
 		return time.Time{}
@@ -347,7 +347,7 @@ func (fi fileInfo)ModTime() time.Time {
 	return mt
 }
 
-func (fi fileInfo)IsDir() bool {
+func (fi fileInfo) IsDir() bool {
 	return IsDirectory(fi.name)
 }
 
