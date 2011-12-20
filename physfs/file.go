@@ -6,8 +6,8 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"syscall"
 	"unsafe"
+	"time"
 )
 
 // #include <stdlib.h>
@@ -266,26 +266,16 @@ func (f *File) Sync() error {
 
 // TODO: Make File.Stat() and File.Readdir() actually work correctly.
 
-func (f *File) Stat() (fi *os.FileInfo, err error) {
-	if f.isdir() {
-		return &os.FileInfo{
-			Mode: 0444 | syscall.S_IFMT | syscall.S_IFDIR,
-			Name: f.name,
-		}, nil
-	}
-
+func (f *File) Stat() (fi os.FileInfo, err error) {
 	size, err := f.Length()
 	if err != nil {
 		return
 	}
 
-	return &os.FileInfo{
-		Mode: 0444 | syscall.S_IFMT | syscall.S_IFREG,
-		Size: size,
-		Name: f.name,
+	return fileInfo{
+		f.name,
+		size,
 	}, nil
-
-	return
 }
 
 func (f *File) Readdir(count int) ([]os.FileInfo, error) {
@@ -309,7 +299,7 @@ func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 	}
 
 	fi := make([]os.FileInfo, 0, count)
-	for i := range files {
+	for i := range files[len(files)-count:] {
 		file, err := Open(f.name + "/" + files[i])
 		if err != nil {
 			return nil, err
@@ -318,13 +308,47 @@ func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 		if err != nil {
 			return nil, err
 		}
-		fi = append(fi, *info)
+		fi = append(fi, info)
 		file.Close()
 	}
 
 	f.read += count
 
 	return fi, nil
+}
+
+type fileInfo struct {
+	name string
+	size int64
+}
+
+func (fi fileInfo)Name() string {
+	return fi.name
+}
+
+func (fi fileInfo)Size() int64 {
+	return fi.size
+}
+
+func (fi fileInfo)Mode() os.FileMode {
+	if fi.IsDir() {
+		return os.ModeDir
+	}
+
+	return 0644
+}
+
+func (fi fileInfo)ModTime() time.Time {
+	mt, err := GetLastModTime(fi.name)
+	if err != nil {
+		return time.Time{}
+	}
+
+	return mt
+}
+
+func (fi fileInfo)IsDir() bool {
+	return IsDirectory(fi.name)
 }
 
 type fileSystem struct{}

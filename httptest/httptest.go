@@ -9,19 +9,19 @@ import (
 func main() {
 	err := physfs.Init()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	defer physfs.Deinit()
 
 	err = physfs.Mount("test.zip", "/", true)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 
 	http.Handle("/", http.FileServer(physfs.FileSystem()))
 
 	err = http.ListenAndServe(":8080", nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 }

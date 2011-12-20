@@ -17,11 +17,6 @@ import (
 // #include "wrapcb.h"
 import "C"
 
-const (
-	T_LOCAL = iota
-	T_UTC
-)
-
 // A type used to store information about supported archive types.
 type ArchiveInfo struct {
 	Extension   string
@@ -547,24 +542,14 @@ func RemoveFromSearchPath(dir string) error {
 
 // Returns the last time the specified file was modified in either or the local
 // time-zone or UTC, and an error, if any.
-func GetLastModTime(n string, zone int) (t *time.Time, err error) {
+func GetLastModTime(n string) (t time.Time, err error) {
 	cn := C.CString(n)
 	defer C.free(unsafe.Pointer(cn))
 	num := int64(C.PHYSFS_getLastModTime(cn))
 
-	if num != -1 {
-		err = nil
-		switch zone {
-		case T_LOCAL:
-			t = time.SecondsToLocalTime(num)
-		case T_UTC:
-			t = time.SecondsToUTC(num)
-		default:
-			err = errors.New("Unknown zone.")
-		}
-
-		return t, err
+	if num < 0 {
+		return t, errors.New(GetLastError())
 	}
 
-	return t, errors.New(GetLastError())
+	return time.Unix(num, 0), nil
 }
