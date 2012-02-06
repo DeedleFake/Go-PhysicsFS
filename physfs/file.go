@@ -332,7 +332,7 @@ func (fi fileInfo) Size() int64 {
 
 func (fi fileInfo) Mode() os.FileMode {
 	if fi.IsDir() {
-		return os.ModeDir
+		return os.ModeDir | 0755
 	}
 
 	return 0644
@@ -349,6 +349,10 @@ func (fi fileInfo) ModTime() time.Time {
 
 func (fi fileInfo) IsDir() bool {
 	return IsDirectory(fi.name)
+}
+
+func (fi fileInfo) Sys() interface{} {
+	return nil
 }
 
 type fileSystem struct{}
