@@ -7,41 +7,47 @@ Prerequisites
 -------------
 
  * [PhysicsFS][physfs].
- * A recent version of [Go][go]. (As of 2011-04-27)
+ * A recent version of [Go][go]. (As of 2012-02-06)
 
 Installation
 ------------
 
 To install simply type:
 
-> goinstall github.com/DeedleFake/Go-PhysicsFS/physfs
+> go get github.com/DeedleFake/Go-PhysicsFS/physfs
 
-If you don't have write permission for GOPATH/GOROOT, you may need to run the previous command as root. If you get errors while trying to run it using sudo, it's possible that the GOROOT/GOOS/GOARCH/GOBIN variables are not available to the make command. You can try using '-E' to preserve the environment:
+This will install into your GOPATH. For more information, type:
 
-> sudo -E goinstall github.com/DeedleFake/Go-PhysicsFS/physfs
+> go help importpath
 
-It's also possible to install just using make:
+and
 
-> make install
+> go help get
 
-or
-
-> sudo -E make install
-
-Usage:
-------
+Usage
+-----
 
 To import, use the following:
 
     import "github.com/DeedleFake/Go-PhysicsFS/physfs"
+
+Docs
+----
+
+To view the documentation locally, type:
+
+> go doc github.com/DeedleFake/Go-PhysicsFS/physfs
+
+If you would like to see the docs in a nice layout online, simply visit [GoPkgDoc][gpd].
 
 Authors
 -------
 
  * [DeedleFake](https://github.com/DeedleFake)
 
-[physfs]: http://www.icculus.org/physfs/
+[physfs]: http://www.icculus.org/physfs
 [go]: http://www.golang.org
+[gpd]: http://gopkgdoc.appspot.com/pkg/github.com/DeedleFake/Go-PhysicsFS/physfs
 
 <!--
     vim:ts=4 sw=4 et
