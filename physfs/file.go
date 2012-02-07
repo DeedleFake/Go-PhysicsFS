@@ -357,9 +357,9 @@ func (fi fileInfo) Sys() interface{} {
 
 type fileSystem struct{}
 
-// Returns a simple implementation of http.FileSystem that simply opens the
-// specified PhysicsFS file.
-// Currently pointless due to the fact the File doesn't satisfy http.File.
+// Returns a simple implementation of http.FileSystem that simply
+// opens the specified PhysicsFS file. Currently works with files, but
+// not directories.
 func FileSystem() http.FileSystem {
 	return new(fileSystem)
 }
