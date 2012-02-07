@@ -12,6 +12,8 @@ Prerequisites
 Installation
 ------------
 
+Note: Compiling with the go tool doesn't work with the latest weekly (weekly.2012-01-27). Please use a standard make/make install until the next weekly comes out. However, note that this method will ignore your GOPATH.
+
 To install simply type:
 
 > go get github.com/DeedleFake/Go-PhysicsFS/physfs
