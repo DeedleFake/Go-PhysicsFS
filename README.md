@@ -7,12 +7,10 @@ Prerequisites
 -------------
 
  * [PhysicsFS][physfs].
- * A recent version of [Go][go]. (As of 2012-02-06)
+ * A recent version of [Go][go]. (As of weekly.2012-02-07)
 
 Installation
 ------------
-
-Note: Compiling with the go tool doesn't work with the latest weekly (weekly.2012-01-27). Please use a standard make/make install until the next weekly comes out. However, note that this method will ignore your GOPATH.
 
 To install simply type:
 
