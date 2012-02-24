@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"syscall"
 	"time"
 	"unsafe"
 )
@@ -98,7 +99,7 @@ func (f *File) Close() error {
 // read and an error, if any.
 func (f *File) Read(buf []byte) (n int, err error) {
 	if f.isdir() {
-		return 0, os.EISDIR
+		return 0, syscall.EISDIR
 	}
 
 	n = int(C.PHYSFS_read(f.cfile, unsafe.Pointer(&buf[0]), 1, C.PHYSFS_uint32(len(buf))))
@@ -118,7 +119,7 @@ func (f *File) Read(buf []byte) (n int, err error) {
 // an error, if any.
 func (f *File) Write(buf []byte) (n int, err error) {
 	if f.isdir() {
-		return 0, os.EISDIR
+		return 0, syscall.EISDIR
 	}
 
 	n = int(C.PHYSFS_write(f.cfile, unsafe.Pointer(&buf[0]), 1, C.PHYSFS_uint32(len(buf))))
@@ -148,7 +149,7 @@ func (f *File) EOF() bool {
 // if any.
 func (f *File) Tell() (int64, error) {
 	if f.isdir() {
-		return 0, os.EISDIR
+		return 0, syscall.EISDIR
 	}
 
 	r := int64(C.PHYSFS_tell(f.cfile))
@@ -166,7 +167,7 @@ func (f *File) Tell() (int64, error) {
 // and an error, if any.
 func (f *File) Seek(offset int64, whence int) (int64, error) {
 	if f.isdir() {
-		return 0, os.EISDIR
+		return 0, syscall.EISDIR
 	}
 
 	newoff := offset
@@ -201,7 +202,7 @@ func (f *File) Seek(offset int64, whence int) (int64, error) {
 // Returns the total length of the file and an error, if any.
 func (f *File) Length() (int64, error) {
 	if f.isdir() {
-		return 0, os.EISDIR
+		return 0, syscall.EISDIR
 	}
 
 	r := int64(C.PHYSFS_fileLength(f.cfile))
@@ -235,7 +236,7 @@ func (f *File) Length() (int64, error) {
 // being able to flush the buffer to disk, among other unexpected problems.
 func (f *File) SetBuffer(size uint64) error {
 	if f.isdir() {
-		return os.EISDIR
+		return syscall.EISDIR
 	}
 
 	if int(C.PHYSFS_setBuffer(f.cfile, C.PHYSFS_uint64(size))) != 0 {
@@ -249,7 +250,7 @@ func (f *File) SetBuffer(size uint64) error {
 // or is unbuffered this will do nothing successfully. Returns an error, if any.
 func (f *File) Flush() error {
 	if f.isdir() {
-		return os.EISDIR
+		return syscall.EISDIR
 	}
 
 	if int(C.PHYSFS_flush(f.cfile)) != 0 {
@@ -280,10 +281,10 @@ func (f *File) Stat() (fi os.FileInfo, err error) {
 
 func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 	if !f.isdir() {
-		return nil, os.ENOTDIR
+		return nil, syscall.ENOTDIR
 	}
 	if f.read < 0 {
-		return nil, os.EINVAL
+		return nil, syscall.EINVAL
 	}
 
 	files, err := EnumerateFiles(f.name)
