@@ -9,7 +9,7 @@ func TestSupportedArchiveTypes(t *testing.T) {
 	if !IsInit() {
 		err := Init()
 		if err != nil {
-			t.Fatalf("Error: %v\n", err.String())
+			t.Fatalf("Error: %v\n", err)
 		}
 	}
 
@@ -21,6 +21,6 @@ func TestSupportedArchiveTypes(t *testing.T) {
 
 	err := Deinit()
 	if err != nil {
-		t.Fatalf("Error: %v\n", err.String())
+		t.Fatalf("Error: %v\n", err)
 	}
 }

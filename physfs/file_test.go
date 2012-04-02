@@ -79,7 +79,7 @@ func TestFile(t *testing.T) {
 	}
 	fmt.Println("Readdir() Test:")
 	for i := range fi {
-		fmt.Printf("\t%v\n", fi[i].Name)
+		fmt.Printf("\t%v\n", fi[i].Name())
 	}
 
 	err = Deinit()

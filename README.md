@@ -7,7 +7,7 @@ Prerequisites
 -------------
 
  * [PhysicsFS][physfs].
- * A recent version of [Go][go]. (As of weekly.2012-02-07)
+ * [Go 1][go].
 
 Installation
 ------------
@@ -18,10 +18,8 @@ To install simply type:
 
 This will install into your GOPATH. For more information, type:
 
-> go help importpath
-
-and
-
+> go help packages
+> go help remote
 > go help get
 
 Usage
