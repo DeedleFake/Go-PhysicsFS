@@ -269,6 +269,12 @@ func (f *File) Sync() error {
 
 func (f *File) Stat() (fi os.FileInfo, err error) {
 	size, err := f.Length()
+	if err == syscall.EISDIR {
+		return fileInfo{
+			f.name,
+			0,
+		}, nil
+	}
 	if err != nil {
 		return
 	}
@@ -366,5 +372,9 @@ func FileSystem() http.FileSystem {
 }
 
 func (fs *fileSystem) Open(name string) (http.File, error) {
-	return Open(name)
+	fi, err := Open(name)
+	if err != nil && err.Error() == "File not found" {
+		err = syscall.ENOENT
+	}
+	return fi, err
 }
