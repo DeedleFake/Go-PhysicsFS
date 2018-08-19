@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path"
 	"syscall"
 	"time"
 	"unsafe"
@@ -307,7 +308,7 @@ func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 
 	fi := make([]os.FileInfo, 0, count)
 	for i := range files[len(files)-count:] {
-		file, err := Open(f.name + "/" + files[i])
+		file, err := Open(path.Join(f.name, files[i]))
 		if err != nil {
 			return nil, err
 		}
