@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path"
 	"syscall"
 	"time"
 	"unsafe"
@@ -269,6 +270,12 @@ func (f *File) Sync() error {
 
 func (f *File) Stat() (fi os.FileInfo, err error) {
 	size, err := f.Length()
+	if err == syscall.EISDIR {
+		return fileInfo{
+			f.name,
+			0,
+		}, nil
+	}
 	if err != nil {
 		return
 	}
@@ -301,7 +308,7 @@ func (f *File) Readdir(count int) ([]os.FileInfo, error) {
 
 	fi := make([]os.FileInfo, 0, count)
 	for i := range files[len(files)-count:] {
-		file, err := Open(f.name + "/" + files[i])
+		file, err := Open(path.Join(f.name, files[i]))
 		if err != nil {
 			return nil, err
 		}
@@ -366,5 +373,9 @@ func FileSystem() http.FileSystem {
 }
 
 func (fs *fileSystem) Open(name string) (http.File, error) {
-	return Open(name)
+	fi, err := Open(name)
+	if err != nil && err.Error() == "File not found" {
+		err = syscall.ENOENT
+	}
+	return fi, err
 }
